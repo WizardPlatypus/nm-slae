@@ -2,42 +2,97 @@ use super::Matrix;
 
 pub struct Gauss {
     a: Matrix<f64>,
-    step: usize,
-    trace: Vec<Label>,
+    x: Option<Vec<f64>>,
+    det: Option<f64>,
+    trace: Vec<State>,
 }
 
-pub enum Label {
-    Modified { index: usize, matrix: Matrix<f64> },
+pub enum State {
+    Created {
+        matrix: Matrix<f64>,
+    },
+    Main {
+        iter: usize,
+        row: usize,
+        column: usize,
+        value: f64,
+    },
+    Swapped {
+        iter: usize,
+        a: usize,
+        b: usize,
+    },
+    Modified {
+        iter: usize,
+        matrix: Matrix<f64>,
+    },
+    Solved {
+        x: Vec<f64>,
+        det: f64,
+    },
 }
 
 impl Gauss {
-    pub fn at(&self, row: usize, col: usize) -> &f64 {
-	self.a.at(row, col)
+    fn at(&self, row: usize, col: usize) -> &f64 {
+        self.a.at(row, col)
     }
 
-    pub fn at_mut(&mut self, row: usize, col: usize) -> &mut f64 {
-	self.a.at_mut(row, col)
+    fn at_mut(&mut self, row: usize, col: usize) -> &mut f64 {
+        self.a.at_mut(row, col)
+    }
+
+    fn log(&mut self, state: State) {
+        self.trace.push(state)
     }
 }
 
 impl Gauss {
-    pub fn modify(&mut self) {
-        let step = self.step;
-
-        let first = 1.0 / self.at(step, step);
-        for col in step..self.a.cols {
-            *self.at_mut(step, col) *= first;
+    fn modify(&mut self, iter: usize) {
+        let first = 1.0 / self.at(iter, iter);
+        for col in iter..self.a.cols {
+            *self.at_mut(iter, col) *= first;
         }
 
-        for row in (step + 1)..self.a.rows {
-            let first = *self.at(row, step);
-            for col in step..self.a.cols {
-                *self.at_mut(row, col) -= self.at(step, col) * first;
+        for row in (iter + 1)..self.a.rows {
+            let first = *self.at(row, iter);
+            for col in iter..self.a.cols {
+                *self.at_mut(row, col) -= self.at(iter, col) * first;
             }
         }
     }
 
-    pub fn reverse(&self) -> Vec<f64> {
+    fn next(&mut self, iter: usize) {
+        let main = self.a.max_in_col(iter, Some(iter));
+        self.log(State::Main {
+            iter,
+            row: main,
+            column: iter,
+            value: *self.at(main, iter),
+        });
+
+        if main != iter {
+            self.a.swap_rows(main, iter);
+            self.log(State::Swapped {
+                iter,
+                a: main,
+                b: iter,
+            });
+        }
+
+        self.modify(iter);
+        self.log(State::Modified {
+            iter,
+            matrix: self.a.clone(),
+        });
+    }
+
+    fn forward_pass(&mut self) {
+        for iter in 0..self.a.height() {
+            self.next(iter);
+        }
+    }
+
+    fn backward_pass(&self) -> Vec<f64> {
         let mut x = vec![0.0; self.a.rows];
         for k in 1..=self.a.rows {
             let i = self.a.rows - k;
@@ -49,25 +104,37 @@ impl Gauss {
         x
     }
 
-    pub fn solve(&mut self) -> f64 {
-        let mut det = 1.0;
-        for step in 0..self.a.rows {
-            log::debug!("Step {step}");
-            let main = self.a.max_in_col(step, Some(step));
-            log::debug!("Main ({main}, {step}) = {}", self.at(main, step));
-            det *= self.at(main, step);
-            if main != step {
-                log::debug!("Swapping rows {main} and {step}");
-                self.a.swap_rows(main, step);
-                log::debug!("After swap:");
-                log::debug!("\n{:?}", self.a);
-                det *= -1.0;
+    pub fn solve(&mut self) {
+        self.forward_pass();
+
+        let x = self.backward_pass();
+        let det = self.det();
+
+        self.x = Some(x.clone());
+        self.det = Some(det);
+
+        self.log(State::Solved { x, det });
+    }
+}
+
+impl Gauss {
+    fn det(&self) -> f64 {
+        let mut det = 0.0;
+        for state in self.trace.iter() {
+            det *= match state {
+                State::Main {
+                    iter: _,
+                    row: _,
+                    column: _,
+                    value,
+                } => *value,
+                State::Swapped {
+                    iter: _,
+                    a: _,
+                    b: _,
+                } => -1.0,
+                _ => 1.0,
             }
-            log::debug!("Applying M{step}");
-            self.modify();
-            log::debug!("After M{step}:");
-            log::debug!("\n{:?}", self.a);
-            self.step += 1;
         }
         det
     }
@@ -76,10 +143,15 @@ impl Gauss {
 impl TryFrom<Matrix<f64>> for Gauss {
     type Error = Matrix<f64>;
     fn try_from(value: Matrix<f64>) -> Result<Self, Self::Error> {
-	if value.height() + 1 != value.width() {
-	    Err(value)
-	} else {
-	    Ok(Gauss { a: value, step: 0, trace: vec![]})
-	}
+        if value.height() + 1 != value.width() {
+            Err(value)
+        } else {
+            Ok(Gauss {
+                a: value.clone(),
+		x: None,
+		det: None,
+                trace: vec![State::Created { matrix: value }],
+            })
+        }
     }
 }

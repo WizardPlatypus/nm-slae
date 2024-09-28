@@ -1,6 +1,6 @@
 pub mod gauss;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Matrix<T> {
     rows: usize,
     cols: usize,
@@ -25,15 +25,15 @@ impl<T> Matrix<T> {
     pub fn safe(&self, row: usize, col: usize) -> bool {
         row < self.rows && col < self.cols
     }
-    
+
     pub fn at(&self, row: usize, col: usize) -> &T {
-	let index = self.index(row, col);
-	&self.data[index]
+        let index = self.index(row, col);
+        &self.data[index]
     }
-    
+
     pub fn at_mut(&mut self, row: usize, col: usize) -> &mut T {
-	let index = self.index(row, col);
-	&mut self.data[index]
+        let index = self.index(row, col);
+        &mut self.data[index]
     }
 
     pub fn height(&self) -> usize {

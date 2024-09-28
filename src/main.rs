@@ -16,16 +16,9 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
 }
 
 fn main() {
-    pretty_env_logger::init();
-
     let n = 5;
     let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
-    log::debug!("\n{:?}", m);
-    
-    let mut g = Gauss::try_from(m).unwrap();
 
-    let det = g.solve();
-    let x = g.reverse();
-    log::debug!("{:?}", det);
-    log::debug!("{:?}", x);
+    let mut g = Gauss::try_from(m).unwrap();
+    g.solve();
 }
