@@ -1,3 +1,5 @@
+pub mod gauss;
+
 pub struct Matrix<T> {
     rows: usize,
     cols: usize,
@@ -19,12 +21,16 @@ impl<T> Matrix<T> {
         row * self.cols + col
     }
 
-    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
-        if row >= self.rows || col >= self.cols {
-            None
-        } else {
-            Some(&self.data[self.mapped(row, col)])
-        }
+    pub fn safe(&self, row: usize, col: usize) -> bool {
+        row < self.rows && col < self.cols
+    }
+
+    pub fn height(&self) -> usize {
+        self.rows
+    }
+
+    pub fn width(&self) -> usize {
+        self.cols
     }
 
     pub fn swap_rows(&mut self, a: usize, b: usize) {
@@ -117,71 +123,5 @@ impl<T> FromIterator<T> for Matrix<T> {
             cols: n,
             data,
         }
-    }
-}
-
-pub trait Gauss {
-    fn max_in_row(&self, row: usize) -> usize;
-    fn max_in_column(&self, col: usize) -> usize;
-    fn modify(&mut self, step: usize);
-    fn reverse(&self) -> Vec<f64>;
-    fn solve(&mut self) -> f64;
-}
-
-impl Gauss for Matrix<f64> {
-    fn max_in_row(&self, row: usize) -> usize {
-        self.max_in_row(row, Some(row))
-    }
-
-    fn max_in_column(&self, col: usize) -> usize {
-        self.max_in_col(col, Some(col))
-    }
-
-    fn modify(&mut self, step: usize) {
-        let first = 1.0 / self[(step, step)];
-        for col in step..self.cols {
-            self[(step, col)] *= first;
-        }
-
-        for row in (step + 1)..self.rows {
-            let first = self[(row, step)];
-            for col in step..self.cols {
-                self[(row, col)] -= self[(step, col)] * first;
-            }
-        }
-    }
-
-    fn reverse(&self) -> Vec<f64> {
-        let mut x = vec![0.0; self.rows];
-        for k in 1..=self.rows {
-            let i = self.rows - k;
-            x[i] = self[(i, self.cols - 1)];
-            for j in (i + 1)..self.rows {
-                x[i] -= self[(i, j)];
-            }
-        }
-        x
-    }
-
-    fn solve(&mut self) -> f64 {
-        let mut det = 1.0;
-        for step in 0..self.rows {
-	    log::debug!("Step {step}");
-            let main = self.max_in_column(step);
-	    log::debug!("Main ({main}, {step}) = {}", self[(main, step)]);
-            det *= self[(main, step)];
-            if main != step {
-		log::debug!("Swapping rows {main} and {step}");
-                self.swap_rows(main, step);
-		log::debug!("After swap:");
-		log::debug!("\n{:?}", self);
-                det *= -1.0;
-            }
-	    log::debug!("Applying M{step}");
-            self.modify(step);
-	    log::debug!("After M{step}:");
-	    log::debug!("\n{:?}", self);
-        }
-        det
     }
 }
