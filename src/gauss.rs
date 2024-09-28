@@ -11,18 +11,28 @@ pub enum Label {
 }
 
 impl Gauss {
+    pub fn at(&self, row: usize, col: usize) -> &f64 {
+	self.a.at(row, col)
+    }
+
+    pub fn at_mut(&mut self, row: usize, col: usize) -> &mut f64 {
+	self.a.at_mut(row, col)
+    }
+}
+
+impl Gauss {
     pub fn modify(&mut self) {
         let step = self.step;
 
-        let first = 1.0 / self.a[(step, step)];
+        let first = 1.0 / self.at(step, step);
         for col in step..self.a.cols {
-            self.a[(step, col)] *= first;
+            *self.at_mut(step, col) *= first;
         }
 
         for row in (step + 1)..self.a.rows {
-            let first = self.a[(row, step)];
+            let first = *self.at(row, step);
             for col in step..self.a.cols {
-                self.a[(row, col)] -= self.a[(step, col)] * first;
+                *self.at_mut(row, col) -= self.at(step, col) * first;
             }
         }
     }
@@ -31,9 +41,9 @@ impl Gauss {
         let mut x = vec![0.0; self.a.rows];
         for k in 1..=self.a.rows {
             let i = self.a.rows - k;
-            x[i] = self.a[(i, self.a.cols - 1)];
+            x[i] = *self.at(i, self.a.cols - 1);
             for j in (i + 1)..self.a.rows {
-                x[i] -= self.a[(i, j)];
+                x[i] -= self.at(i, j);
             }
         }
         x
@@ -44,8 +54,8 @@ impl Gauss {
         for step in 0..self.a.rows {
             log::debug!("Step {step}");
             let main = self.a.max_in_col(step, Some(step));
-            log::debug!("Main ({main}, {step}) = {}", self.a[(main, step)]);
-            det *= self.a[(main, step)];
+            log::debug!("Main ({main}, {step}) = {}", self.at(main, step));
+            det *= self.at(main, step);
             if main != step {
                 log::debug!("Swapping rows {main} and {step}");
                 self.a.swap_rows(main, step);
