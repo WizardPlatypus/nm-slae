@@ -1,4 +1,4 @@
-use super::Matrix;
+use super::{Matrix, Report};
 
 pub struct Gauss {
     a: Matrix<f64>,
@@ -21,6 +21,7 @@ pub enum State {
         iter: usize,
         a: usize,
         b: usize,
+	n: usize
     },
     Modified {
         iter: usize,
@@ -76,6 +77,7 @@ impl Gauss {
                 iter,
                 a: main,
                 b: iter,
+		n: self.a.height()
             });
         }
 
@@ -132,6 +134,7 @@ impl Gauss {
                     iter: _,
                     a: _,
                     b: _,
+		    n: _
                 } => -1.0,
                 _ => 1.0,
             }
@@ -148,10 +151,55 @@ impl TryFrom<Matrix<f64>> for Gauss {
         } else {
             Ok(Gauss {
                 a: value.clone(),
-		x: None,
-		det: None,
+                x: None,
+                det: None,
                 trace: vec![State::Created { matrix: value }],
             })
         }
+    }
+}
+
+use std::fmt::Write;
+
+impl Report for State {
+    fn latex(&self) -> Result<String, std::fmt::Error> {
+
+	let mut s = String::new();
+	match &self {
+	    Self::Created { matrix } => {
+		writeln!(s, "A = {}", matrix.latex()?)?;
+	    },
+	    Self::Main { iter, row, column, value } => {
+		writeln!(s, "a _{{ {row}, {column} }} = \\underset {{ i }} {{ \\max |a _{{ i, {column} }} ^{{ ({} - 1) }} | }} = {value}", iter + 1)?;
+	    },
+	    Self::Swapped { iter, a, b, n } => {
+		let mut p = Matrix::e(*n);
+		p.swap_rows(*a, *b);
+		writeln!(s, "P _{} = {}", iter + 1,  p.latex()?)?;
+	    },
+	    Self::Modified { iter, matrix } => {
+		writeln!(s, "A _{} = {}", iter + 1,  matrix.latex()?)?;
+	    },
+	    Self::Solved { x, det } => {
+		let mut values = Vec::with_capacity(x.len());
+		for value in x {
+		    values.push(format!("{:.2}", value));
+		}
+		writeln!(s, "\\hbar {{ x }} = ({})", values.join(", "))?;
+		writeln!(s, "\\Delta A = {det}")?;
+	    }
+	}
+	
+	Ok(s)
+    }
+}
+
+impl Report for Gauss {
+    fn latex(&self) -> Result<String, std::fmt::Error> {
+	let mut s = String::new();
+	for state in self.trace.iter() {
+	    writeln!(s, "{}", state.latex()?)?;
+	}
+	Ok(s)
     }
 }
