@@ -174,15 +174,15 @@ impl Report for State {
         match &self {
             Self::Created { matrix } => {
                 // writeln!(s, "$A = {}$", matrix.latex()?)?;
-		writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\bar {{ 0..{} }}, j = \\bar {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
+		writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\overline {{ 0..{} }}, j = \\overline {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
             }
             Self::Main {
-                iter,
+                iter: _,
                 row,
                 column,
                 value,
             } => {
-                writeln!(s, "$a _{{ {row}, {column} }} =  \\max _i |a _{{ i, {column} }} ^{{ ({} - 1) }} | = {value}$", iter + 1)?;
+                writeln!(s, "$a _{{ {row}, {column} }} = {value}$")?;
             }
             Self::Swapped { iter, a, b, n: _ } => {
                 writeln!(s, "$P _{} = E _{{ {a}, {b} }}$", iter + 1)?;
