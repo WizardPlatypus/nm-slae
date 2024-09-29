@@ -24,8 +24,8 @@ fn report(n: usize) -> String {
 }
 
 fn main() {
-    let begin = 10;
-    let end = 100;
+    let begin = 100;
+    let end = 200;
 
     let (tx, rx) = std::sync::mpsc::channel();
     

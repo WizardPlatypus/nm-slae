@@ -1,0 +1,22 @@
+
+ Performance counter stats for 'target/release/matrices':
+
+          6,969.44 msec task-clock:u                     #    1.593 CPUs utilized             
+                 0      context-switches:u               #    0.000 /sec                      
+                 0      cpu-migrations:u                 #    0.000 /sec                      
+             4,087      page-faults:u                    #  586.418 /sec                      
+   <not supported>      cycles:u                                                              
+   <not supported>      instructions:u                                                        
+   <not supported>      branches:u                                                            
+   <not supported>      branch-misses:u                                                       
+   <not supported>      L1-dcache-loads:u                                                     
+   <not supported>      L1-dcache-load-misses:u                                               
+   <not supported>      LLC-loads:u                                                           
+   <not supported>      LLC-load-misses:u                                                     
+
+       4.375810586 seconds time elapsed
+
+       6.539023000 seconds user
+       0.021562000 seconds sys
+
+
