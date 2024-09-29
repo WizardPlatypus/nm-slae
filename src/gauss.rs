@@ -87,10 +87,12 @@ impl Gauss {
         }
 
         self.modify(iter);
+	/*
         self.log(State::Modified {
             iter,
             matrix: self.a.clone(),
         });
+	// */
     }
 
     fn forward_pass(&mut self) {
@@ -171,7 +173,8 @@ impl Report for State {
         let mut s = String::new();
         match &self {
             Self::Created { matrix } => {
-                writeln!(s, "A = {}", matrix.latex()?)?;
+                // writeln!(s, "$A = {}$", matrix.latex()?)?;
+		writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\bar {{ 0..{} }}, j = \\bar {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
             }
             Self::Main {
                 iter,
@@ -179,23 +182,17 @@ impl Report for State {
                 column,
                 value,
             } => {
-                writeln!(s, "a _{{ {row}, {column} }} = \\underset {{ i }} {{ \\max |a _{{ i, {column} }} ^{{ ({} - 1) }} | }} = {value}", iter + 1)?;
+                writeln!(s, "$a _{{ {row}, {column} }} =  \\max _i |a _{{ i, {column} }} ^{{ ({} - 1) }} | = {value}$", iter + 1)?;
             }
-            Self::Swapped { iter, a, b, n } => {
-                let mut p = Matrix::e(*n);
-                p.swap_rows(*a, *b);
-                writeln!(s, "P _{} = {}", iter + 1, p.latex()?)?;
+            Self::Swapped { iter, a, b, n: _ } => {
+                writeln!(s, "$P _{} = E _{{ {a}, {b} }}$", iter + 1)?;
             }
             Self::Modified { iter, matrix } => {
                 writeln!(s, "A _{} = {}", iter + 1, matrix.latex()?)?;
             }
             Self::Solved { x, det } => {
-                let mut values = Vec::with_capacity(x.len());
-                for value in x {
-                    values.push(format!("{:.2}", value));
-                }
-                writeln!(s, "\\hbar {{ x }} = ({})", values.join(", "))?;
-                writeln!(s, "\\Delta A = {det}")?;
+                writeln!(s, "$\\bar {{ x }} = {}$\n", x.latex()?)?;
+                writeln!(s, "$\\Delta A = {det:e}$\n")?;
             }
         }
 

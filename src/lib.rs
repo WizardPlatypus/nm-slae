@@ -131,9 +131,25 @@ impl Report for Matrix<f64> {
             }
             write!(s, "{}", values.join(" & "))?;
             if row + 1 != self.height() {
-                write!(s, "\\\\")?;
+                write!(s, " \\\\")?;
             }
             writeln!(s)?;
+        }
+        writeln!(s, "\\end{{pmatrix}}")?;
+
+        Ok(s)
+    }
+}
+
+impl Report for Vec<f64> {
+    fn latex(&self) -> Result<String, std::fmt::Error> {
+        use std::fmt::Write;
+
+        let mut s = String::new();
+
+        writeln!(s, "\\begin{{pmatrix}}")?;
+	for value in self {
+            writeln!(s, "{:.2} \\\\", value)?;
         }
         writeln!(s, "\\end{{pmatrix}}")?;
 

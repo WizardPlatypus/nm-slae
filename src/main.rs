@@ -1,4 +1,4 @@
-use matrices::{gauss::Gauss, Matrix};
+use matrices::{gauss::Gauss, Matrix, Report};
 use rayon::prelude::*;
 
 fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
@@ -16,21 +16,11 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
     }
 }
 
-#[derive(Clone, Debug)]
-struct Solution {
-    x: Vec<f64>,
-    det: f64,
-}
-
-fn run(n: usize) -> Solution {
+fn report(n: usize) -> String {
     let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
     let mut g = Gauss::try_from(m).unwrap();
     g.solve();
-    let (_, x, det, _) = g.unbox();
-    Solution {
-        x: x.unwrap(),
-        det: det.unwrap(),
-    }
+    g.latex().unwrap()
 }
 
 fn main() {
@@ -40,8 +30,8 @@ fn main() {
     let (tx, rx) = std::sync::mpsc::channel();
     
     (begin..=end).into_par_iter().for_each(|n| {
-	let solution = run(n);
-	tx.send((n, solution)).unwrap();
+	let report = report(n);
+	tx.send((n, report)).unwrap();
     });
     
     drop(tx);
@@ -52,9 +42,12 @@ fn main() {
     }
     collected.sort_by_key(|(n, _)| *n);
 
+    println!(r#"\documentclass[a4paper,12pt]{{article}}"#);
+    println!(r#"\usepackage{{amsmath}}"#);
+    println!(r#"\begin{{document}}"#);
     for (n, s) in collected {
-	println!("N = {n}");
-	println!("b = ({})", s.x.iter().map(|t| format!("{t:.2}")).collect::<Vec<String>>().join(", "));
-	println!("det = {:e}", s.det);
+	println!("\\section{{ $N = {n}$ }}");
+	println!("{s}");
     }
+    println!(r#"\end{{document}}"#);
 }
