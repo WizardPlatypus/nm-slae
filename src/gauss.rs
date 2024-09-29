@@ -45,6 +45,11 @@ impl Gauss {
     fn log(&mut self, state: State) {
         self.trace.push(state)
     }
+
+    pub fn unbox(self) -> (Matrix<f64>, Option<Vec<f64>>, Option<f64>, Vec<State>) {
+        let Gauss { a, x, det, trace } = self;
+        (a, x, det, trace)
+    }
 }
 
 impl Gauss {
@@ -121,7 +126,7 @@ impl Gauss {
 
 impl Gauss {
     fn det(&self) -> f64 {
-        let mut det = 0.0;
+        let mut det = 1.0;
         for state in self.trace.iter() {
             det *= match state {
                 State::Main {
