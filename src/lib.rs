@@ -63,12 +63,16 @@ impl<T> Matrix<T> {
 
 impl Matrix<f64> {
     pub fn e(n: usize) -> Matrix<f64> {
-	let data = vec![0.0; n];
-	let mut e = Matrix { rows: n, cols: n, data };
-	for i in 0..n {
-	    *e.at_mut(i, i) = 1.0;
-	}
-	e
+        let data = vec![0.0; n];
+        let mut e = Matrix {
+            rows: n,
+            cols: n,
+            data,
+        };
+        for i in 0..n {
+            *e.at_mut(i, i) = 1.0;
+        }
+        e
     }
 }
 
@@ -113,13 +117,7 @@ pub trait Report {
     fn latex(&self) -> Result<String, std::fmt::Error>;
 }
 
-impl Report for f64 {
-    fn latex(&self) -> Result<String, std::fmt::Error> {
-        Ok(format!("{:.2}", self))
-    }
-}
-
-impl<T: Report> Report for Matrix<T> {
+impl Report for Matrix<f64> {
     fn latex(&self) -> Result<String, std::fmt::Error> {
         use std::fmt::Write;
 
@@ -129,7 +127,7 @@ impl<T: Report> Report for Matrix<T> {
         for row in 0..self.height() {
             let mut values = Vec::with_capacity(self.width());
             for col in 0..self.width() {
-                values.push(self.at(row, col).latex()?);
+                values.push(format!("{:.2}", self.at(row, col)));
             }
             write!(s, "{}", values.join(" & "))?;
             if row + 1 != self.height() {
