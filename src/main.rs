@@ -28,17 +28,17 @@ fn main() {
     let end = 200;
 
     let (tx, rx) = std::sync::mpsc::channel();
-    
+
     (begin..=end).into_par_iter().for_each(|n| {
-	let report = report(n);
-	tx.send((n, report)).unwrap();
+        let report = report(n);
+        tx.send((n, report)).unwrap();
     });
-    
+
     drop(tx);
-    
+
     let mut collected = Vec::with_capacity(end - begin + 1);
     while let Ok(data) = rx.recv() {
-	collected.push(data);
+        collected.push(data);
     }
     collected.sort_by_key(|(n, _)| *n);
 
@@ -46,8 +46,8 @@ fn main() {
     println!(r#"\usepackage{{amsmath}}"#);
     println!(r#"\begin{{document}}"#);
     for (n, s) in collected {
-	println!("\\section{{ $N = {n}$ }}");
-	println!("{s}");
+        println!("\\section{{ $N = {n}$ }}");
+        println!("{s}");
     }
     println!(r#"\end{{document}}"#);
 }

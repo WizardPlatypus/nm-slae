@@ -87,12 +87,12 @@ impl Gauss {
         }
 
         self.modify(iter);
-	/*
-        self.log(State::Modified {
-            iter,
-            matrix: self.a.clone(),
-        });
-	// */
+        /*
+            self.log(State::Modified {
+                iter,
+                matrix: self.a.clone(),
+            });
+        // */
     }
 
     fn forward_pass(&mut self) {
@@ -174,7 +174,7 @@ impl Report for State {
         match &self {
             Self::Created { matrix } => {
                 // writeln!(s, "$A = {}$", matrix.latex()?)?;
-		writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\overline {{ 0..{} }}, j = \\overline {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
+                writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\overline {{ 0..{} }}, j = \\overline {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
             }
             Self::Main {
                 iter: _,

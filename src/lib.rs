@@ -148,7 +148,7 @@ impl Report for Vec<f64> {
         let mut s = String::new();
 
         writeln!(s, "\\begin{{pmatrix}}")?;
-	for value in self {
+        for value in self {
             writeln!(s, "{:.2} \\\\", value)?;
         }
         writeln!(s, "\\end{{pmatrix}}")?;
