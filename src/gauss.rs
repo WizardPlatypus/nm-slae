@@ -97,12 +97,10 @@ impl Gauss {
         }
 
         self.modify(iter);
-        /*
-            self.log(State::Modified {
-                iter,
-                matrix: self.a.clone(),
-            });
-        // */
+        self.log(State::Modified {
+            iter,
+            matrix: self.a.clone(),
+        });
     }
 
     fn forward_pass(&mut self) {
