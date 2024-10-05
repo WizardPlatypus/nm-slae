@@ -34,6 +34,43 @@ impl<T> Matrix<T> {
         self.cols
     }
 
+    pub fn row(&self, col: usize) -> Row<'_, T> {
+        Row {
+            data: self.data.as_slice(),
+            width: self.width(),
+            col,
+            row: 0,
+        }
+    }
+
+    pub fn col(&self, row: usize) -> Col<'_, T> {
+        Col {
+            data: self.data.as_slice(),
+            width: self.width(),
+            height: self.height(),
+            col: 0,
+            row,
+        }
+    }
+
+    pub fn rows(&self) -> Rows<'_, T> {
+        Rows {
+            data: self.data.as_slice(),
+            width: self.width(),
+            height: self.height(),
+            row: 0,
+        }
+    }
+
+    pub fn cols(&self) -> Cols<'_, T> {
+        Cols {
+            data: self.data.as_slice(),
+            width: self.width(),
+            height: self.height(),
+            col: 0,
+        }
+    }
+
     pub fn swap_rows(&mut self, a: usize, b: usize) {
         for col in 0..self.cols {
             let x = self.index(a, col);
@@ -66,28 +103,6 @@ impl Matrix<f64> {
     }
 }
 
-impl<T: PartialOrd> Matrix<T> {
-    pub fn max_in_row(&self, row: usize, skip: Option<usize>) -> usize {
-        let mut max = skip.unwrap_or(0);
-        for col in (max + 1)..self.cols {
-            if self.at(row, col) >= self.at(row, max) {
-                max = col;
-            }
-        }
-        max
-    }
-
-    pub fn max_in_col(&self, col: usize, skip: Option<usize>) -> usize {
-        let mut max = skip.unwrap_or(0);
-        for row in (max + 1)..self.rows {
-            if self.at(row, col) >= self.at(max, col) {
-                max = row;
-            }
-        }
-        max
-    }
-}
-
 impl<T> Matrix<T> {
     pub fn try_from_iter<I: IntoIterator<Item = T>>(
         iter: I,
@@ -115,6 +130,98 @@ impl<T> Matrix<T> {
             }
         }
         Matrix { rows, cols, data }
+    }
+}
+
+pub struct Col<'a, T> {
+    data: &'a [T],
+    width: usize,
+    height: usize,
+    row: usize,
+    col: usize,
+}
+
+impl<'a, T> std::iter::Iterator for Col<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row < self.height {
+            let index = self.row * self.width + self.col;
+            self.row += 1;
+            Some(&self.data[index])
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Row<'a, T> {
+    data: &'a [T],
+    width: usize,
+    row: usize,
+    col: usize,
+}
+
+impl<'a, T> std::iter::Iterator for Row<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.col < self.width {
+            let index = self.row * self.width + self.col;
+            self.col += 1;
+            Some(&self.data[index])
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Rows<'a, T> {
+    data: &'a [T],
+    width: usize,
+    height: usize,
+    row: usize,
+}
+
+impl<'a, T> std::iter::Iterator for Rows<'a, T> {
+    type Item = Row<'a, T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row < self.height {
+            let row = Row {
+                data: self.data,
+                width: self.width,
+                row: self.row,
+                col: 0,
+            };
+            self.row += 1;
+            Some(row)
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Cols<'a, T> {
+    data: &'a [T],
+    width: usize,
+    height: usize,
+    col: usize,
+}
+
+impl<'a, T> std::iter::Iterator for Cols<'a, T> {
+    type Item = Col<'a, T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.col < self.width {
+            let col = Col {
+                data: self.data,
+                width: self.width,
+                height: self.height,
+                row: 0,
+                col: self.col,
+            };
+            self.col += 1;
+            Some(col)
+        } else {
+            None
+        }
     }
 }
 

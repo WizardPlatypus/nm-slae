@@ -68,12 +68,22 @@ impl Gauss {
     }
 
     fn next(&mut self, iter: usize) {
-        let main = self.a.max_in_col(iter, Some(iter));
+        let main = self
+            .a
+            .col(iter)
+            .enumerate()
+            .skip(iter)
+            .max_by(|&(_, a), &(_, b)| f64::total_cmp(a, b));
+        if main.is_none() {
+            return;
+        }
+        let (main, &value) = main.unwrap();
+
         self.log(State::Main {
             iter,
             row: main,
             column: iter,
-            value: *self.at(main, iter),
+            value,
         });
 
         if main != iter {
