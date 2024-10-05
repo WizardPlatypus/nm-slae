@@ -115,6 +115,15 @@ impl<T: Clone> Matrix<T> {
             ))
         }
     }
+
+    pub fn transposed(&self) -> Matrix<T> {
+        let height = self.width();
+        let width = self.height();
+
+        let gen = |i, j| self.at(j, i).clone();
+
+        Matrix::new(height, width, gen)
+    }
 }
 
 impl Matrix<f64> {
@@ -321,5 +330,13 @@ mod tests {
                 assert!((inv.at(i, j) - expected.at(i, j)).abs() < 10e-6);
             }
         }
+    }
+
+    #[test]
+    fn transposed_ok() {
+        let a = Matrix::try_from_iter([1, 2, 3, 4, 5, 6, 7, 8].iter(), 2, 4).unwrap();
+        let b = Matrix::try_from_iter([1, 5, 2, 6, 3, 7, 4, 8].iter(), 4, 2).unwrap();
+        assert_eq!(a.data, b.transposed().data);
+        assert_eq!(b.data, a.transposed().data);
     }
 }
