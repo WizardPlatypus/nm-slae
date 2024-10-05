@@ -70,7 +70,7 @@ impl Gauss {
     fn next(&mut self, iter: usize) {
         let main = self
             .a
-            .col(iter)
+            .column(iter)
             .enumerate()
             .skip(iter)
             .max_by(|&(_, a), &(_, b)| f64::total_cmp(a, b));

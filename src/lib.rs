@@ -1,4 +1,9 @@
+pub mod columns;
 pub mod gauss;
+pub mod rows;
+
+pub use columns::*;
+pub use rows::*;
 
 #[derive(Debug, Clone)]
 pub struct Matrix<T> {
@@ -34,41 +39,20 @@ impl<T> Matrix<T> {
         self.cols
     }
 
-    pub fn row(&self, col: usize) -> Row<'_, T> {
-        Row {
-            data: self.data.as_slice(),
-            width: self.width(),
-            col,
-            row: 0,
-        }
+    pub fn row(&self, row: usize) -> Row<'_, T> {
+	Row::new(&self.data, self.width(), row)
     }
 
-    pub fn col(&self, row: usize) -> Col<'_, T> {
-        Col {
-            data: self.data.as_slice(),
-            width: self.width(),
-            height: self.height(),
-            col: 0,
-            row,
-        }
+    pub fn column(&self, column: usize) -> Column<'_, T> {
+	Column::new(&self.data, self.width(), self.height(), column)
     }
 
     pub fn rows(&self) -> Rows<'_, T> {
-        Rows {
-            data: self.data.as_slice(),
-            width: self.width(),
-            height: self.height(),
-            row: 0,
-        }
+	Rows::new(&self.data, self.width(), self.height())
     }
 
-    pub fn cols(&self) -> Cols<'_, T> {
-        Cols {
-            data: self.data.as_slice(),
-            width: self.width(),
-            height: self.height(),
-            col: 0,
-        }
+    pub fn columns(&self) -> Columns<'_, T> {
+	Columns::new(&self.data, self.width(), self.height())
     }
 
     pub fn swap_rows(&mut self, a: usize, b: usize) {
@@ -133,98 +117,6 @@ impl<T> Matrix<T> {
     }
 }
 
-pub struct Col<'a, T> {
-    data: &'a [T],
-    width: usize,
-    height: usize,
-    row: usize,
-    col: usize,
-}
-
-impl<'a, T> std::iter::Iterator for Col<'a, T> {
-    type Item = &'a T;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.row < self.height {
-            let index = self.row * self.width + self.col;
-            self.row += 1;
-            Some(&self.data[index])
-        } else {
-            None
-        }
-    }
-}
-
-pub struct Row<'a, T> {
-    data: &'a [T],
-    width: usize,
-    row: usize,
-    col: usize,
-}
-
-impl<'a, T> std::iter::Iterator for Row<'a, T> {
-    type Item = &'a T;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.col < self.width {
-            let index = self.row * self.width + self.col;
-            self.col += 1;
-            Some(&self.data[index])
-        } else {
-            None
-        }
-    }
-}
-
-pub struct Rows<'a, T> {
-    data: &'a [T],
-    width: usize,
-    height: usize,
-    row: usize,
-}
-
-impl<'a, T> std::iter::Iterator for Rows<'a, T> {
-    type Item = Row<'a, T>;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.row < self.height {
-            let row = Row {
-                data: self.data,
-                width: self.width,
-                row: self.row,
-                col: 0,
-            };
-            self.row += 1;
-            Some(row)
-        } else {
-            None
-        }
-    }
-}
-
-pub struct Cols<'a, T> {
-    data: &'a [T],
-    width: usize,
-    height: usize,
-    col: usize,
-}
-
-impl<'a, T> std::iter::Iterator for Cols<'a, T> {
-    type Item = Col<'a, T>;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.col < self.width {
-            let col = Col {
-                data: self.data,
-                width: self.width,
-                height: self.height,
-                row: 0,
-                col: self.col,
-            };
-            self.col += 1;
-            Some(col)
-        } else {
-            None
-        }
-    }
-}
-
 pub trait Report {
     fn latex(&self) -> Result<String, std::fmt::Error>;
 }
@@ -266,5 +158,38 @@ impl Report for Vec<f64> {
         writeln!(s, "\\end{{pmatrix}}")?;
 
         Ok(s)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn gen(i: usize, j: usize) -> (usize, usize) {
+        (i, j)
+    }
+
+    #[test]
+    fn rows_ok() {
+        let size = 5;
+        let m = Matrix::new(size, size, gen);
+	for (row_id, row) in m.rows().enumerate() {
+	    for (column_id, &(i, j)) in row.enumerate() {
+		assert_eq!(i, row_id);
+		assert_eq!(j, column_id);
+	    }
+	}
+    }
+
+    #[test]
+    fn columns_ok() {
+        let size = 5;
+        let m = Matrix::new(size, size, gen);
+	for (column_id, column) in m.columns().enumerate() {
+	    for (row_id, &(i, j)) in column.enumerate() {
+		assert_eq!(i, row_id);
+		assert_eq!(j, column_id);
+	    }
+	}
     }
 }
