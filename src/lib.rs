@@ -1,5 +1,6 @@
 pub mod columns;
 pub mod gauss;
+pub mod jacobi;
 pub mod rows;
 
 pub use columns::*;
