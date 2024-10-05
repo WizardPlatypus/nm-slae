@@ -8,16 +8,6 @@ pub struct Matrix<T> {
 }
 
 impl<T> Matrix<T> {
-    pub fn new<F: Fn(usize, usize) -> T>(rows: usize, cols: usize, f: F) -> Matrix<T> {
-        let mut data = Vec::with_capacity(rows * cols);
-        for row in 0..rows {
-            for col in 0..cols {
-                data.push(f(row, col));
-            }
-        }
-        Matrix { rows, cols, data }
-    }
-
     fn index(&self, row: usize, col: usize) -> usize {
         row * self.cols + col
     }
@@ -98,18 +88,33 @@ impl<T: PartialOrd> Matrix<T> {
     }
 }
 
-impl<T> FromIterator<T> for Matrix<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+impl<T> Matrix<T> {
+    pub fn try_from_iter<I: IntoIterator<Item = T>>(
+        iter: I,
+        height: usize,
+        width: usize,
+    ) -> Result<Matrix<T>, usize> {
         let data: Vec<T> = iter.into_iter().collect();
-        let mut n = 1;
-        while n * (n + 1) <= data.len() {
-            n += 1;
+        let expected = width * height;
+        if data.len() < expected {
+            Err(expected - data.len())
+        } else {
+            Ok(Matrix {
+                data,
+                rows: height,
+                cols: width,
+            })
         }
-        Matrix {
-            rows: n - 1,
-            cols: n,
-            data,
+    }
+
+    pub fn new<F: Fn(usize, usize) -> T>(rows: usize, cols: usize, f: F) -> Matrix<T> {
+        let mut data = Vec::with_capacity(rows * cols);
+        for row in 0..rows {
+            for col in 0..cols {
+                data.push(f(row, col));
+            }
         }
+        Matrix { rows, cols, data }
     }
 }
 
