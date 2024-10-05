@@ -183,6 +183,19 @@ impl Matrix<f64> {
         }
         m.window(0, m.height(), m.height(), m.height())
     }
+
+    pub fn cond(&self) -> f64 {
+        let me = self.norm();
+        let inv = self.inverse().unwrap().norm();
+        me * inv
+    }
+
+    pub fn norm(&self) -> f64 {
+        self.rows()
+            .map(|row| row.map(Clone::clone).map(f64::abs).sum())
+            .max_by(f64::total_cmp)
+            .expect("There was less than one element")
+    }
 }
 
 impl<T> Matrix<T> {
@@ -212,19 +225,6 @@ impl<T> Matrix<T> {
             }
         }
         Matrix { rows, cols, data }
-    }
-}
-
-impl<T: Ord + std::iter::Sum + Clone + num::Signed> Matrix<T> {
-    pub fn norm(&self) -> T {
-        self.rows()
-            .map(|row| {
-                row.map(std::clone::Clone::clone)
-                    .map(num::traits::abs)
-                    .sum()
-            })
-            .max()
-            .expect("There was less than one element")
     }
 }
 
