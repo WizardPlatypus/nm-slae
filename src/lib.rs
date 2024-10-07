@@ -229,6 +229,19 @@ impl<T> Matrix<T> {
     }
 }
 
+impl std::fmt::Display for Matrix<f64> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.rows() {
+            write!(f, "|")?;
+            for cell in row {
+                write!(f, " {:.2}", cell)?;
+            }
+            writeln!(f, " |")?;
+        }
+        Ok(())
+    }
+}
+
 pub trait Report {
     fn latex(&self) -> Result<String, std::fmt::Error>;
 }
