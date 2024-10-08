@@ -3,16 +3,33 @@ use matrices::{
     Matrix,
 };
 
+fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
+    if i == 0 && j == 0 {
+        1
+    } else if i == j {
+        0
+    } else if j == n {
+        (i + 1) as i64
+    } else if i > j {
+        -((j + 1) as i64)
+    } else {
+        // if j > i
+        (j + 1) as i64
+    }
+}
+
 pub fn main() {
-    let m = Matrix::try_from_iter(
-        [
-            3.0, -1.0, 1.0, 1.0, -1.0, 2.0, 0.5, 1.75, 1.0, 0.5, 3.0, 2.5,
-        ],
-        3,
-        4,
-    )
-    .unwrap();
-    println!("converges: {:?}", jacobi::converges(&m));
+    use std::str::FromStr;
+    let n: usize = usize::from_str(&std::env::args().nth(1).expect("Missing argument"))
+        .expect("N should be a non negative integer");
+
+    let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
+    println!("A =\n{}", &m);
+    println!("||A|| = {}", m.norm());
+    println!("cond(A) = {}", m.cond());
+    let converges = jacobi::converges(&m);
+    println!("converges: {:?}", converges);
+
     let mut g = Jacobi::new(m).unwrap();
     let e = 0.5;
     let solution = g.solve(e);

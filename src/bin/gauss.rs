@@ -15,32 +15,26 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
     }
 }
 
+
 fn main() {
     use std::str::FromStr;
     let n: usize = usize::from_str(&std::env::args().nth(1).expect("Missing argument"))
         .expect("N should be a non negative integer");
 
+    //let example = Matrix::try_from_iter([7.6, 0.5, 2.4, 1.9, 2.2, 9.1, 4.4, 9.7, -1.3, 0.2, 5.8, -1.4], 3, 4);
     let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
+    let inv = m.inverse().unwrap();
+    println!("A-1 =\n{:.2}", inv);
+    println!("||A-1|| = {:.2}", inv.norm());
+
+    println!("A = {:.2}", m);
+    println!("||A|| = {:.2}", m.norm());
+
+    println!("cond(A) = {:.2}", m.cond());
     let mut g = Gauss::try_from(m.clone()).unwrap();
     g.solve();
     let (_m, _x, _det, trace) = g.unbox();
     for state in trace {
-        match state {
-            State::Created { matrix } => {
-		println!("A =\n{:.2}", matrix);
-	    },
-	    State::Main { iter, row, column, value } => {
-		println!("a{iter} = A[{row},{column}] = {value:.2}");
-	    },
-	    State::Swapped { iter, a, b, n: _n } => {
-		println!("P{iter} = E{{{a}, {b}}}");
-	    },
-	    State::Modified { iter, matrix } => {
-		println!("A{iter} =\n{:.2}", matrix);
-	    },
-	    State::Solved { x, det } => {
-		println!("X = {:.2?}, det = {:.2}", x, det);
-	    },
-        }
+        println!("{state}");
     }
 }

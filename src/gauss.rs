@@ -217,3 +217,31 @@ impl Report for Gauss {
         Ok(s)
     }
 }
+
+impl std::fmt::Display for State {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            State::Created { matrix } => {
+                writeln!(f, "A =\n{:.2}", matrix)?;
+            }
+            State::Main {
+                iter,
+                row,
+                column,
+                value,
+            } => {
+                writeln!(f, "a{iter} = A[{row},{column}] = {value:.2}")?;
+            }
+            State::Swapped { iter, a, b, n: _n } => {
+                writeln!(f, "P{iter} = E{{{a}, {b}}}")?;
+            }
+            State::Modified { iter, matrix } => {
+                writeln!(f, "A{iter} =\n{:.2}", matrix)?;
+            }
+            State::Solved { x, det } => {
+                writeln!(f, "X = {:.2?}, det = {:.2}", x, det)?;
+            }
+        }
+        Ok(())
+    }
+}

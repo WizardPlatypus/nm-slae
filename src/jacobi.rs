@@ -13,12 +13,24 @@ pub struct Trace {
 
 impl Jacobi {
     pub fn new(a: Matrix<f64>) -> Result<Jacobi, Matrix<f64>> {
-        if converges(&a) {
-            let x = vec![0.0; a.height()];
-            Ok(Jacobi { a, x, trace: vec![] })
-        } else {
-            Err(a)
-        }
+        /*
+            if converges(&a) {
+                let x = vec![0.0; a.height()];
+                Ok(Jacobi {
+                    a,
+                    x,
+                    trace: vec![],
+                })
+            } else {
+                Err(a)
+            }
+        // */
+        let x = vec![0.0; a.height()];
+        Ok(Jacobi {
+            a,
+            x,
+            trace: vec![],
+        })
     }
 
     pub fn next(&self) -> Vec<f64> {
