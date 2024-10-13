@@ -55,13 +55,13 @@ impl Gauss {
 impl Gauss {
     fn modify(&mut self, iter: usize) {
         let first = 1.0 / self.at(iter, iter);
-        for col in iter..self.a.cols {
+        for col in iter..self.a.width {
             *self.at_mut(iter, col) *= first;
         }
 
-        for row in (iter + 1)..self.a.rows {
+        for row in (iter + 1)..self.a.height {
             let first = *self.at(row, iter);
-            for col in iter..self.a.cols {
+            for col in iter..self.a.width {
                 *self.at_mut(row, col) -= self.at(iter, col) * first;
             }
         }
@@ -110,11 +110,11 @@ impl Gauss {
     }
 
     fn backward_pass(&self) -> Vec<f64> {
-        let mut x = vec![0.0; self.a.rows];
-        for k in 1..=self.a.rows {
-            let i = self.a.rows - k;
-            x[i] = *self.at(i, self.a.cols - 1);
-            for j in (i + 1)..self.a.rows {
+        let mut x = vec![0.0; self.a.height];
+        for k in 1..=self.a.height {
+            let i = self.a.height - k;
+            x[i] = *self.at(i, self.a.width - 1);
+            for j in (i + 1)..self.a.height {
                 x[i] -= self.at(i, j);
             }
         }
