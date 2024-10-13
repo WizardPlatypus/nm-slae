@@ -1,4 +1,4 @@
-use super::{Matrix, Report};
+use super::{Matrix};
 
 pub struct Gauss {
     a: Matrix<f64>,
@@ -175,49 +175,6 @@ impl TryFrom<Matrix<f64>> for Gauss {
 }
 
 use std::fmt::Write;
-
-impl Report for State {
-    fn latex(&self) -> Result<String, std::fmt::Error> {
-        let mut s = String::new();
-        match &self {
-            Self::Created { matrix } => {
-                // writeln!(s, "$A = {}$", matrix.latex()?)?;
-                writeln!(s, "$A = \\{{ a _{{ i, j }} | i = \\overline {{ 0..{} }}, j = \\overline {{ 0..{} }} \\}}$", matrix.height(), matrix.width())?;
-            }
-            Self::Main {
-                iter: _,
-                row,
-                column,
-                value,
-            } => {
-                writeln!(s, "$a _{{ {row}, {column} }} = {value}$")?;
-            }
-            Self::Swapped { iter, a, b, n: _ } => {
-                writeln!(s, "$P _{} = E _{{ {a}, {b} }}$", iter + 1)?;
-            }
-            Self::Modified { iter, matrix } => {
-                writeln!(s, "A _{} = {}", iter + 1, matrix.latex()?)?;
-            }
-            Self::Solved { x, det } => {
-                writeln!(s, "$\\bar {{ x }} = {}$\n", x.latex()?)?;
-                writeln!(s, "$\\Delta A = {det:e}$\n")?;
-            }
-        }
-
-        Ok(s)
-    }
-}
-
-impl Report for Gauss {
-    fn latex(&self) -> Result<String, std::fmt::Error> {
-        let mut s = String::new();
-        for state in self.trace.iter() {
-            writeln!(s, "{}", state.latex()?)?;
-        }
-        Ok(s)
-    }
-}
-
 impl std::fmt::Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

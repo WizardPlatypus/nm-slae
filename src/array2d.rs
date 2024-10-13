@@ -1,3 +1,6 @@
+use crate::Matrix;
+use crate::traits::Mapped;
+
 pub struct Array2d<T> {
     rows: Vec<usize>,
     columns: Vec<usize>,
@@ -40,6 +43,24 @@ impl<T> Array2d<T> {
             Err(data)
         }
     }
+
+    pub fn sync_rows(&mut self, temp: &mut T) {
+        for row in 0..self.height() {
+            self.sync_row(row, temp);
+        }
+        for i in 0..self.width() {
+            self.rows[i] = i;
+        }
+    }
+
+    pub fn sync_columns(&mut self, temp: &mut T) {
+        for column in 0..self.width() {
+            self.sync_column(column, temp);
+        }
+        for i in 0..self.height() {
+            self.columns[i] = i;
+        }
+    }
 }
 
 impl<T> crate::Matrix for Array2d<T> {
@@ -77,9 +98,27 @@ impl<T> crate::Matrix for Array2d<T> {
     }
 }
 
+impl<T> Mapped for Array2d<T> {
+    type Item = T;
+
+    fn row(&self, index: usize) -> usize {
+        self.rows[index]
+    }
+
+    fn column(&self, index: usize) -> usize {
+        self.columns[index]
+    }
+
+    fn cell(&mut self, row: usize, column: usize) -> &mut Self::Item {
+        use crate::Matrix;
+        self.at_mut(row, column).expect("Invalid access request from Mapped trait")
+    }
+}
+
 
 impl std::fmt::Display for Array2d<f64> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use crate::Iteratable;
         for row in self.rows() {
             write!(f, "|")?;
             for cell in row {

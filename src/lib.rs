@@ -1,12 +1,12 @@
 pub mod gauss;
 pub mod jacobi;
-mod matrix;
+mod traits;
 mod array2d;
 mod iterators;
 mod meow;
 mod transposed;
 
-pub use matrix::Matrix;
+pub use traits::Matrix;
 pub use array2d::Array2d;
 pub use iterators::*;
 pub use meow::Meow;
