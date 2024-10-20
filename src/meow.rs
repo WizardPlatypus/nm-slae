@@ -80,14 +80,18 @@ impl<M: Matrix<Item=T>, T> Meow<M> {
     }
 
     pub fn sync_rows(&mut self, temp: &mut T) {
-        for row in 0..self.height() {
-            self.sync_row(row, temp);
+        if self.rows.is_right() {
+            for row in 0..self.height() {
+                self.sync_row(row, temp);
+            }
         }
     }
 
     pub fn sync_columns(&mut self, temp: &mut T) {
-        for column in 0..self.width() {
-            self.sync_column(column, temp);
+        if self.columns.is_right() {
+            for column in 0..self.width() {
+                self.sync_column(column, temp);
+            }
         }
     }
 }
