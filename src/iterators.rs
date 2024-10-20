@@ -1,9 +1,12 @@
 use crate::Matrix;
 
+pub mod mutable;
+
 pub struct Row<'a, T> {
     origin: &'a T,
     row: usize,
-    cursor: usize,
+    left: usize,
+    right: usize,
 }
 
 impl<'a, T> Row<'a, T> {
@@ -11,7 +14,8 @@ impl<'a, T> Row<'a, T> {
         Row {
             origin,
             row,
-            cursor: 0,
+            left: 0,
+            right: 0,
         }
     }
 }
@@ -19,9 +23,22 @@ impl<'a, T> Row<'a, T> {
 impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Row<'a, M> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor < self.origin.width() {
-            let cell = self.origin.at(self.row, self.cursor);
-            self.cursor += 1;
+        if self.left < self.origin.width() - self.right {
+            let cell = self.origin.at(self.row, self.left);
+            self.left += 1;
+            cell
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Row<'a, M> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let w = self.origin.width();
+        if self.left < w - self.right {
+            let cell = self.origin.at(self.row, w - self.right - 1);
+            self.right += 1;
             cell
         } else {
             None
@@ -31,7 +48,8 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Row<'a, M> {
 
 pub struct Rows<'a, T> {
     origin: &'a T,
-    cursor: usize,
+    left: usize,
+    right: usize,
 }
 
 impl<'a, T> Rows<'a, T> {
@@ -40,7 +58,8 @@ impl<'a, T> Rows<'a, T> {
     ) -> Rows<'a, T> {
         Rows {
             origin,
-            cursor: 0,
+            left: 0,
+            right: 0,
         }
     }
 }
@@ -48,9 +67,22 @@ impl<'a, T> Rows<'a, T> {
 impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Rows<'a, M> {
     type Item = Row<'a, M>;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor < self.origin.height() {
-            let row = Row::new(self.origin, self.cursor);
-            self.cursor += 1;
+        if self.left < self.origin.height() - self.right {
+            let row = Row::new(self.origin, self.left);
+            self.left += 1;
+            Some(row)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Rows<'a, M> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let h = self.origin.height();
+        if self.left < h - self.right {
+            let row = Row::new(self.origin, h - self.right - 1);
+            self.right += 1;
             Some(row)
         } else {
             None
@@ -61,7 +93,8 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Rows<'a, M> {
 pub struct Column<'a, T> {
     origin: &'a T,
     column: usize,
-    cursor: usize,
+    left: usize,
+    right: usize,
 }
 
 impl<'a, T> Column<'a, T> {
@@ -69,7 +102,8 @@ impl<'a, T> Column<'a, T> {
         Column {
             origin,
             column,
-            cursor: 0,
+            left: 0,
+            right: 0,
         }
     }
 }
@@ -77,9 +111,9 @@ impl<'a, T> Column<'a, T> {
 impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Column<'a, M> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor < self.origin.height() {
-            let cell = self.origin.at(self.cursor, self.column);
-            self.cursor += 1;
+        if self.left < self.origin.height() - self.right {
+            let cell = self.origin.at(self.left, self.column);
+            self.left += 1;
             cell
         } else {
             None
@@ -87,9 +121,24 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Column<'a, M> {
     }
 }
 
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a, M> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let h = self.origin.height();
+        if self.left < h - self.right {
+            let cell = self.origin.at(h - self.right - 1, self.column);
+            self.right += 1;
+            cell
+        } else {
+            None
+        }
+    }
+}
+
+
 pub struct Columns<'a, T> {
     origin: &'a T,
-    cursor: usize,
+    left: usize,
+    right: usize,
 }
 
 impl<'a, T> Columns<'a, T> {
@@ -98,7 +147,8 @@ impl<'a, T> Columns<'a, T> {
     ) -> Columns<'a, T> {
         Columns {
             origin,
-            cursor: 0,
+            left: 0,
+            right: 0,
         }
     }
 }
@@ -106,9 +156,22 @@ impl<'a, T> Columns<'a, T> {
 impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Columns<'a, M> {
     type Item = Column<'a, M>;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor < self.origin.width() {
-            let column = Column::new(self.origin, self.cursor);
-            self.cursor += 1;
+        if self.left < self.origin.width() - self.right {
+            let column = Column::new(self.origin, self.left);
+            self.left += 1;
+            Some(column)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Columns<'a, M> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let w = self.origin.width();
+        if self.left < w - self.right {
+            let column = Column::new(self.origin, w - self.right - 1);
+            self.right += 1;
             Some(column)
         } else {
             None
