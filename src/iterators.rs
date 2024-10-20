@@ -1,5 +1,7 @@
 use crate::Matrix;
 
+pub mod indexed;
+
 pub struct Row<'a, T> {
     origin: &'a T,
     row: usize,
