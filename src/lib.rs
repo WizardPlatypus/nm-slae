@@ -32,3 +32,19 @@ pub fn inf_norm<M: Matrix<Item = f64>>(m: &M) -> f64 {
         .max_by(f64::total_cmp)
         .expect("There was less than one element")
 }
+
+pub fn inversed(a: Array2d<f64>) -> Array2d<f64> {
+    let e = Array2d::gen(a.height(), a.height(), |i, j| if i == j { 1.0 } else {0.0});
+    let mut m = Meow::from(a);
+    m.eat(e).unwrap();
+
+    gauss::calc_l(&mut m);
+    gauss::calc_u(&mut m);
+    gauss::normalize(&mut m);
+
+    m.calculate(1).expect("Could not extract E")
+}
+
+pub fn cond(a: &Array2d<f64>) -> f64 {
+    inf_norm(a) * inf_norm(&inversed(a.clone()))
+}

@@ -18,7 +18,8 @@ pub fn dx(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
         .expect("There wasn't a single element")
 }
 
-pub fn iterate_on<M: Matrix<Item = f64>>(x: &mut [f64], epsilon: f64, m: &M, b: &[f64]) {
+pub fn iterate_on<M: Matrix<Item = f64>>(x: &mut [f64], epsilon: f64, m: &M, b: &[f64]) -> usize {
+    let mut iterations = 0;
     let mut dx = vec![0.0; x.len()];
     loop {
         for i in 0..x.len() {
@@ -32,6 +33,9 @@ pub fn iterate_on<M: Matrix<Item = f64>>(x: &mut [f64], epsilon: f64, m: &M, b: 
             }
             x[i] += dx[i];
         }
+
+        iterations += 1;
+
         if dx
             .iter()
             .cloned()
@@ -43,4 +47,6 @@ pub fn iterate_on<M: Matrix<Item = f64>>(x: &mut [f64], epsilon: f64, m: &M, b: 
             break;
         }
     }
+
+    iterations
 }
