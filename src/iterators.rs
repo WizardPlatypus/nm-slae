@@ -1,7 +1,5 @@
 use crate::Matrix;
 
-pub mod mutable;
-
 pub struct Row<'a, T> {
     origin: &'a T,
     row: usize,
@@ -31,7 +29,14 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Row<'a, M> {
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let rest = self.origin.width() - self.left - self.right;
+        (rest, Some(rest))
+    }
 }
+
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Row<'a, M> {}
 
 impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Row<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -75,7 +80,14 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Rows<'a, M> {
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let rest = self.origin.height() - self.left - self.right;
+        (rest, Some(rest))
+    }
 }
+
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Rows<'a, M> {}
 
 impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Rows<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -119,7 +131,14 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Column<'a, M> {
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let rest = self.origin.height() - self.left - self.right;
+        (rest, Some(rest))
+    }
 }
+
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Column<'a, M> {}
 
 impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -133,7 +152,6 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a,
         }
     }
 }
-
 
 pub struct Columns<'a, T> {
     origin: &'a T,
@@ -164,7 +182,14 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Columns<'a, M> {
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let rest = self.origin.width() - self.left - self.right;
+        (rest, Some(rest))
+    }
 }
+
+impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Columns<'a, M> {}
 
 impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Columns<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
