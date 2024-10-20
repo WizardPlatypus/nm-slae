@@ -16,6 +16,23 @@ pub use meow::Meow;
 pub use traits::Matrix;
 pub use transposed::Transposed;
 
+pub fn multiply_diagonal<M: Matrix<Item=f64>>(m: &M) -> f64 {
+    let mut product = 1.0;
+    let mut i = 0;
+    while let Some(value) = m.at(i, i) {
+        product *= value;
+        i += 1;
+    }
+    product
+}
+
+pub fn inf_norm<M: Matrix<Item=f64>>(m: &M) -> f64 {
+    m.rows()
+        .map(|row| row.cloned().map(f64::abs).sum())
+        .max_by(f64::total_cmp)
+        .expect("There was less than one element")
+}
+
 /*
 impl Matrix<f64> {
     pub fn e(n: usize) -> Matrix<f64> {
@@ -81,12 +98,6 @@ impl Matrix<f64> {
         me * inv
     }
 
-    pub fn norm(&self) -> f64 {
-        self.rows()
-            .map(|row| row.map(Clone::clone).map(f64::abs).sum())
-            .max_by(f64::total_cmp)
-            .expect("There was less than one element")
-    }
 }
 
 #[cfg(test)]

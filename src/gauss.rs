@@ -1,4 +1,4 @@
-use crate::{Indexable, Iteratable, Matrix};
+use crate::{Iteratable, Matrix};
 
 fn total_cmp(a: &(usize, f64), b: &(usize, f64)) -> std::cmp::Ordering {
     f64::total_cmp(&a.1, &b.1)
@@ -105,39 +105,12 @@ pub fn calc_u<M: Matrix<Item = f64>>(m: &mut M) -> Option<()> {
     }
     Some(())
 }
-/*
-    pub fn solve(&mut self) {
-        self.forward_pass();
 
-        let x = self.backward_pass();
-        let det = self.det();
-
-        self.x = Some(x.clone());
-        self.det = Some(det);
-
-        self.log(State::Solved { x, det });
-    }
-
-    fn det(&self) -> f64 {
-        let mut det = 1.0;
-        for state in self.trace.iter() {
-            det *= match state {
-                State::Main {
-                    iter: _,
-                    row: _,
-                    column: _,
-                    value,
-                } => *value,
-                State::Swapped {
-                    iter: _,
-                    a: _,
-                    b: _,
-                    n: _,
-                } => -1.0,
-                _ => 1.0,
-            }
+pub fn normalize<M: Matrix<Item=f64>>(m: &mut M) {
+    for i in 0..m.height() {
+        let diag = *m.at(i, i).unwrap();
+        for j in 0..m.width() {
+            *m.at_mut(i, j).unwrap() /= diag;
         }
-        det
     }
 }
-// */

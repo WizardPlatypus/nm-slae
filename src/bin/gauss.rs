@@ -1,12 +1,10 @@
-use matrices::{gauss::*, Matrix};
+use matrices::{gauss::*, Array2d, Matrix, Meow};
 
-fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
+fn gen_a(i: usize, j: usize) -> i64 {
     if i == 0 && j == 0 {
         1
     } else if i == j {
         0
-    } else if j == n {
-        (i + 1) as i64
     } else if i > j {
         -((j + 1) as i64)
     } else {
@@ -15,25 +13,55 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
     }
 }
 
+fn gen_b(i: usize) -> f64 {
+    (i + 1) as f64
+}
+
 fn main() {
     use std::str::FromStr;
     let n: usize = usize::from_str(&std::env::args().nth(1).expect("Missing argument"))
         .expect("N should be a non negative integer");
 
     //let example = Matrix::try_from_iter([7.6, 0.5, 2.4, 1.9, 2.2, 9.1, 4.4, 9.7, -1.3, 0.2, 5.8, -1.4], 3, 4);
-    let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
-    let inv = m.inverse().unwrap();
-    println!("A-1 =\n{:.2}", inv);
-    println!("||A-1|| = {:.2}", inv.norm());
+    let a = Array2d::gen(n, n, |i, j| gen_a(i, j) as f64);
+    let b = Array2d::gen(n, 1, |i, _| gen_b(i));
+    let e = Array2d::gen(n, n, |i, j| if i == j { 1.0 } else { 0.0 });
 
-    println!("A = {:.2}", m);
-    println!("||A|| = {:.2}", m.norm());
+    let norm = matrices::inf_norm(&a);
 
-    println!("cond(A) = {:.2}", m.cond());
-    let mut g = Gauss::try_from(m.clone()).unwrap();
-    g.solve();
-    let (_m, _x, _det, trace) = g.unbox();
-    for state in trace {
-        println!("{state}");
-    }
+    println!("A = {}", a);
+    println!("b = {}", b);
+    println!("||A|| = {:.2}", norm);
+
+    let mut m = Meow::from(a);
+    m.eat(b);
+    m.eat(e);
+
+    println!("M = {}", m);
+
+    gauss::calc_l(&mut m);
+    println!("L = {}", m);
+
+    gauss::calc_u(&mut m);
+    println!("U = {}", m);
+
+    let det = matrices::multiply_diag(m);
+    println!("det = {}", det);
+
+    gauss::normalize(&mut m);
+    println!("normalized = {}", m);
+
+    let mut temp = 0.0;
+    let inverse = m.poop(&mut temp).unwrap();
+    let x = m.poop(&mut temp).unwrap();
+    let a = m.poop(&mut temp).unwrap();
+
+    println!("inverse = {}", inverse);
+    println!("x = {}", x);
+    println!("a = {}", a);
+
+    let inverse_norm = matrices::inf_norm(&inverse);
+    let cond = norm * inverse_norm;
+    println!("||inverse|| = {}", inverse_norm);
+    println!("cond(A) = {}", cond);
 }
