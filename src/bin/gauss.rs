@@ -22,46 +22,42 @@ fn main() {
     let n: usize = usize::from_str(&std::env::args().nth(1).expect("Missing argument"))
         .expect("N should be a non negative integer");
 
-    //let example = Matrix::try_from_iter([7.6, 0.5, 2.4, 1.9, 2.2, 9.1, 4.4, 9.7, -1.3, 0.2, 5.8, -1.4], 3, 4);
     let a = Array2d::gen(n, n, |i, j| gen_a(i, j) as f64);
     let b = Array2d::gen(n, 1, |i, _| gen_b(i));
     let e = Array2d::gen(n, n, |i, j| if i == j { 1.0 } else { 0.0 });
 
     let norm = matrices::inf_norm(&a);
 
-    println!("A = {}", a);
-    println!("b = {}", b);
-    println!("||A|| = {:.2}", norm);
+    println!("A =\n{}", a);
+    println!("b =\n{}", b);
 
     let mut m = Meow::from(a);
     m.eat(b).expect("Failed to consume B");
     m.eat(e).expect("Failed to consume E");
 
-    println!("M = {}", m);
+    println!("M =\n{}", m);
 
     gauss::calc_l(&mut m);
-    println!("L = {}", m);
+    println!("L =\n{}", m);
 
     gauss::calc_u(&mut m);
-    println!("U = {}", m);
+    println!("U =\n{}", m);
 
     let det = matrices::multiply_diagonal(&m);
     println!("det = {}", det);
 
     gauss::normalize(&mut m);
-    println!("normalized = {}", m);
+    println!("normalized =\n{}", m);
 
-    let mut temp = 0.0;
-    let inverse = m.poop(&mut temp).unwrap();
-    let x = m.poop(&mut temp).unwrap();
-    let a = m.poop(&mut temp).unwrap();
+    let inverse = m.calculate(2).unwrap();
+    let x = m.calculate(1).unwrap();
 
-    println!("inverse = {}", inverse);
-    println!("x = {}", x);
-    println!("a = {}", a);
+    println!("inverse =\n{}", inverse);
+    println!("x =\n{}", x);
 
     let inverse_norm = matrices::inf_norm(&inverse);
     let cond = norm * inverse_norm;
+    println!("||A|| = {:.2}", norm);
     println!("||inverse|| = {}", inverse_norm);
     println!("cond(A) = {}", cond);
 }

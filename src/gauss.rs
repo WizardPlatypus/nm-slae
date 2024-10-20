@@ -42,7 +42,10 @@ pub fn calc_l<M: Matrix<Item = f64>>(m: &mut M) -> Option<()> {
             let factor = m.at(row, i)? / value;
             *m.at_mut(row, i)? = 0.0;
             for column in (i + 1)..w {
-                *m.at_mut(row, column)? -= m.at(i, column)? * factor;
+                let src = m.at(i, column)? * factor;
+                let dst = m.at_mut(row, column)?;
+                *dst -= src;
+                // *m.at_mut(row, column)? -= m.at(i, column)? * factor;
             }
         }
     }
@@ -112,5 +115,172 @@ pub fn normalize<M: Matrix<Item = f64>>(m: &mut M) {
         for j in 0..m.width() {
             *m.at_mut(i, j).unwrap() /= diag;
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{Array2d, Iteratable, Meow};
+
+    #[test]
+    fn l_good_diagonal() {
+        let mut a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 2.0, 4.0, 3.0, 2.0, 1.0,
+            ],
+        )
+        .unwrap();
+        crate::gauss::calc_l(&mut a);
+        println!("{}", a);
+
+        for (i, row) in a.rows().enumerate().skip(1) {
+            for cell in row.take(i) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn l_bad_diagonal() {
+        let mut a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 0.0, 2.0, 3.0, 3.0, 2.0, 0.0, 2.0, 4.0, 3.0, 2.0, 0.0,
+            ],
+        )
+        .unwrap();
+        crate::gauss::calc_l(&mut a);
+        println!("{}", a);
+
+        for (i, row) in a.rows().enumerate().skip(1) {
+            for cell in row.take(i) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn u_good_diagonal() {
+        let mut a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 2.0, 4.0, 3.0, 2.0, 1.0,
+            ],
+        )
+        .unwrap();
+        crate::gauss::calc_u(&mut a);
+        println!("{}", a);
+
+        for (i, row) in a.rows().enumerate().rev().skip(1) {
+            for cell in row.skip(i + 1) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn u_bad_diagonal() {
+        let mut a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 0.0, 2.0, 3.0, 3.0, 2.0, 0.0, 2.0, 4.0, 3.0, 2.0, 0.0,
+            ],
+        )
+        .unwrap();
+        crate::gauss::calc_u(&mut a);
+        println!("{}", a);
+
+        for (i, row) in a.rows().enumerate().rev().skip(1) {
+            for cell in row.skip(i + 1) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn l_with_meow() {
+        let a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 2.0, 4.0, 3.0, 2.0, 1.0,
+            ],
+        )
+        .unwrap();
+        let b = Array2d::try_from(4, 1, vec![1.0, 1.0, 1.0, 1.0]).unwrap();
+        let mut m = Meow::from(a);
+        m.eat(b).unwrap();
+
+        crate::gauss::calc_l(&mut m);
+        println!("{}", m);
+
+        for (i, row) in m.rows().enumerate().skip(1) {
+            for cell in row.take(i) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn u_with_meow() {
+        let a = Array2d::try_from(
+            4,
+            4,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 2.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 2.0, 4.0, 3.0, 2.0, 1.0,
+            ],
+        )
+        .unwrap();
+        let b = Array2d::try_from(4, 1, vec![1.0, 1.0, 1.0, 1.0]).unwrap();
+        let mut m = Meow::from(a);
+        m.eat(b).unwrap();
+
+        crate::gauss::calc_u(&mut m);
+        println!("{}", m);
+
+        for (i, row) in m.rows().enumerate().skip(1) {
+            for cell in row.take(4).skip(i + 1) {
+                assert_eq!(*cell, 0.0);
+            }
+        }
+    }
+
+    fn gen_a(i: usize, j: usize) -> i64 {
+        if i == 0 && j == 0 {
+            1
+        } else if i == j {
+            0
+        } else if i > j {
+            -((j + 1) as i64)
+        } else {
+            // if j > i
+            (j + 1) as i64
+        }
+    }
+
+    #[test]
+    fn l_my_example() {
+        let mut a = Array2d::gen(5, 5, |i, j| gen_a(i, j) as f64);
+        crate::gauss::calc_l(&mut a);
+
+        let expected = Array2d::try_from(
+            5,
+            5,
+            vec![
+                1.0, 2.0, 3.0, 4.0, 5.0, //
+                0.0, 2.0, 6.0, 8.0, 10.0, //
+                0.0, 0.0, 3.0, 8.0, 10.0, //
+                0.0, 0.0, 0.0, 4.0, 10.0, //
+                0.0, 0.0, 0.0, 0.0, 5.0, //
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(a, expected);
     }
 }
