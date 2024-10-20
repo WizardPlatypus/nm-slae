@@ -1,5 +1,4 @@
-use crate::Matrix;
-use crate::{traits::Mapped, Array2d};
+use crate::{traits::Mapped, Matrix};
 use either::{Either, Left, Right};
 
 #[derive(Clone)]

@@ -1,3 +1,6 @@
+#![allow(unused)]
+#![allow(dead_code)]
+
 use matrices::{Array2d, Iteratable, Matrix};
 use rayon::prelude::*;
 

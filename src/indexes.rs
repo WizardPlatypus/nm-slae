@@ -1,6 +1,5 @@
 #[derive(Clone)]
 pub struct Row {
-    height: usize,
     width: usize,
     row: usize,
     left: usize,
@@ -8,9 +7,8 @@ pub struct Row {
 }
 
 impl Row {
-    pub fn new(height: usize, width: usize, row: usize) -> Row {
+    pub fn new(width: usize, row: usize) -> Row {
         Row {
-            height,
             width,
             row,
             left: 0,
@@ -74,7 +72,7 @@ impl std::iter::Iterator for Rows {
     type Item = Row;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.height - self.right {
-            let row = Row::new(self.height, self.width, self.left);
+            let row = Row::new(self.width, self.left);
             self.left += 1;
             Some(row)
         } else {
@@ -93,7 +91,7 @@ impl std::iter::ExactSizeIterator for Rows {}
 impl std::iter::DoubleEndedIterator for Rows {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.left < self.height - self.right {
-            let row = Row::new(self.height, self.width, self.height - self.right - 1);
+            let row = Row::new(self.width, self.height - self.right - 1);
             self.right += 1;
             Some(row)
         } else {
@@ -105,17 +103,15 @@ impl std::iter::DoubleEndedIterator for Rows {
 #[derive(Clone)]
 pub struct Column {
     height: usize,
-    width: usize,
     column: usize,
     left: usize,
     right: usize,
 }
 
 impl Column {
-    pub fn new(height: usize, width: usize, column: usize) -> Column {
+    pub fn new(height: usize, column: usize) -> Column {
         Column {
             height,
-            width,
             column,
             left: 0,
             right: 0,
@@ -178,7 +174,7 @@ impl std::iter::Iterator for Columns {
     type Item = Column;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.width - self.right {
-            let column = Column::new(self.height, self.width, self.left);
+            let column = Column::new(self.height, self.left);
             self.left += 1;
             Some(column)
         } else {
@@ -197,7 +193,7 @@ impl std::iter::ExactSizeIterator for Columns {}
 impl std::iter::DoubleEndedIterator for Columns {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.left < self.width - self.right {
-            let column = Column::new(self.height, self.width, self.width - self.right - 1);
+            let column = Column::new(self.height, self.width - self.right - 1);
             self.right += 1;
             Some(column)
         } else {
@@ -211,10 +207,10 @@ pub trait Indexable {
     fn iwidth(&self) -> usize;
 
     fn irow(&self, row: usize) -> Row {
-        Row::new(self.iheight(), self.iwidth(), row)
+        Row::new(self.iwidth(), row)
     }
     fn icolumn(&self, column: usize) -> Column {
-        Column::new(self.iheight(), self.iwidth(), column)
+        Column::new(self.iheight(), column)
     }
 
     fn irows(&self) -> Rows {
