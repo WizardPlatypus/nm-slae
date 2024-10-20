@@ -1,4 +1,4 @@
-use matrices::{gauss::*, Array2d, Matrix, Meow};
+use matrices::{gauss, Array2d, Meow};
 
 fn gen_a(i: usize, j: usize) -> i64 {
     if i == 0 && j == 0 {
@@ -34,8 +34,8 @@ fn main() {
     println!("||A|| = {:.2}", norm);
 
     let mut m = Meow::from(a);
-    m.eat(b);
-    m.eat(e);
+    m.eat(b).expect("Failed to consume B");
+    m.eat(e).expect("Failed to consume E");
 
     println!("M = {}", m);
 
@@ -45,7 +45,7 @@ fn main() {
     gauss::calc_u(&mut m);
     println!("U = {}", m);
 
-    let det = matrices::multiply_diag(m);
+    let det = matrices::multiply_diagonal(&m);
     println!("det = {}", det);
 
     gauss::normalize(&mut m);

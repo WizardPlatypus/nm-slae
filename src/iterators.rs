@@ -1,11 +1,21 @@
 use crate::Matrix;
 
-#[derive(Clone)]
 pub struct Row<'a, T> {
     origin: &'a T,
     row: usize,
     left: usize,
     right: usize,
+}
+
+impl<'a, T> std::clone::Clone for Row<'a, T> {
+    fn clone(&self) -> Self {
+        Self {
+            origin: self.origin,
+            row: self.row,
+            left: self.left,
+            right: self.right,
+        }
+    }
 }
 
 impl<'a, T> Row<'a, T> {

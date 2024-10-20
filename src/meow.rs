@@ -1,7 +1,8 @@
-use crate::traits::Mapped;
 use crate::Matrix;
+use crate::{traits::Mapped, Array2d};
 use either::{Either, Left, Right};
 
+#[derive(Clone)]
 pub struct Meow<T> {
     rows: Either<usize, Vec<usize>>,
     columns: Either<usize, Vec<usize>>,
@@ -108,14 +109,14 @@ impl<M: Matrix<Item = T>, T> Mapped for Meow<M> {
     fn row(&self, index: usize) -> Option<usize> {
         match self.rows.as_ref() {
             Left(_) => Some(index),
-            Right(v) => v.get(index).map(Clone::clone),
+            Right(v) => v.get(index).cloned(),
         }
     }
 
     fn column(&self, index: usize) -> Option<usize> {
         match self.columns.as_ref() {
             Left(_) => Some(index),
-            Right(v) => v.get(index).map(Clone::clone),
+            Right(v) => v.get(index).cloned(),
         }
     }
 
@@ -222,5 +223,24 @@ impl<M: Matrix<Item = T>, T> Matrix for Meow<M> {
             }
         }
         Some(())
+    }
+}
+
+impl<M: Matrix<Item = f64>> std::fmt::Display for Meow<M> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let widths: Vec<usize> = self.concat.iter().map(Matrix::width).collect();
+        for row in 0..self.height() {
+            write!(f, "|")?;
+            let mut total = 0;
+            for &width in widths.iter() {
+                for i in 0..width {
+                    write!(f, " {:.2}", self.at(row, total + i).unwrap())?;
+                }
+                write!(f, " |")?;
+                total += width;
+            }
+            writeln!(f, " |")?;
+        }
+        Ok(())
     }
 }

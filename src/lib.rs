@@ -16,7 +16,7 @@ pub use meow::Meow;
 pub use traits::Matrix;
 pub use transposed::Transposed;
 
-pub fn multiply_diagonal<M: Matrix<Item=f64>>(m: &M) -> f64 {
+pub fn multiply_diagonal<M: Matrix<Item = f64>>(m: &M) -> f64 {
     let mut product = 1.0;
     let mut i = 0;
     while let Some(value) = m.at(i, i) {
@@ -26,7 +26,7 @@ pub fn multiply_diagonal<M: Matrix<Item=f64>>(m: &M) -> f64 {
     product
 }
 
-pub fn inf_norm<M: Matrix<Item=f64>>(m: &M) -> f64 {
+pub fn inf_norm<M: Matrix<Item = f64>>(m: &M) -> f64 {
     m.rows()
         .map(|row| row.cloned().map(f64::abs).sum())
         .max_by(f64::total_cmp)
@@ -34,72 +34,6 @@ pub fn inf_norm<M: Matrix<Item=f64>>(m: &M) -> f64 {
 }
 
 /*
-impl Matrix<f64> {
-    pub fn e(n: usize) -> Matrix<f64> {
-        let data = vec![0.0; n * n];
-        let mut e = Matrix {
-            height: n,
-            width: n,
-            data,
-        };
-        for i in 0..n {
-            *e.at_mut(i, i) = 1.0;
-        }
-        e
-    }
-
-    pub fn inverse(&self) -> Result<Matrix<f64>, String> {
-        let e = Matrix::e(self.height());
-        let mut m = self.append_right(&e).unwrap();
-        for iter in 0..m.height() {
-            let (main, _) = m
-                .column(iter)
-                .enumerate()
-                .skip(iter)
-                .max_by(|&(_, a), &(_, b)| f64::total_cmp(a, b))
-                .unwrap();
-
-            if main != iter {
-                m.swap_rows(main, iter);
-            }
-
-            let first = 1.0 / m.at(iter, iter);
-            for col in iter..m.width() {
-                *m.at_mut(iter, col) *= first;
-            }
-
-            for row in (iter + 1)..m.height() {
-                let first = *m.at(row, iter);
-                for col in iter..m.width() {
-                    *m.at_mut(row, col) -= m.at(iter, col) * first;
-                }
-            }
-        }
-        for iter in 0..m.height() {
-            let first = 1.0 / m.at(m.height() - iter - 1, m.height() - iter - 1);
-            for col in iter..m.width() {
-                *m.at_mut(m.height() - iter - 1, col) *= first;
-            }
-
-            for row in (iter + 1)..m.height() {
-                let first = *m.at(m.height() - row - 1, m.height() - iter - 1);
-                for col in iter..m.width() {
-                    *m.at_mut(m.height() - row - 1, col) -=
-                        m.at(m.height() - iter - 1, col) * first;
-                }
-            }
-        }
-        m.window(0, m.height(), m.height(), m.height())
-    }
-
-    pub fn cond(&self) -> f64 {
-        let me = self.norm();
-        let inv = self.inverse().unwrap().norm();
-        me * inv
-    }
-
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -106,7 +106,7 @@ pub fn calc_u<M: Matrix<Item = f64>>(m: &mut M) -> Option<()> {
     Some(())
 }
 
-pub fn normalize<M: Matrix<Item=f64>>(m: &mut M) {
+pub fn normalize<M: Matrix<Item = f64>>(m: &mut M) {
     for i in 0..m.height() {
         let diag = *m.at(i, i).unwrap();
         for j in 0..m.width() {

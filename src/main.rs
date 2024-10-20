@@ -1,4 +1,4 @@
-use matrices::{gauss::Gauss, Matrix, Report};
+use matrices::{Array2d, Iteratable, Matrix};
 use rayon::prelude::*;
 
 fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
@@ -16,14 +16,8 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
     }
 }
 
-fn report(n: usize) -> String {
-    let m = Matrix::new(n, n + 1, |i, j| my_matrix(n, i, j) as f64);
-    let mut g = Gauss::try_from(m).unwrap();
-    g.solve();
-    g.latex().unwrap()
-}
-
 fn main() {
+    /*
     let begin = 100;
     let end = 200;
 
@@ -41,13 +35,5 @@ fn main() {
         collected.push(data);
     }
     collected.sort_by_key(|(n, _)| *n);
-
-    println!(r#"\documentclass[a4paper,12pt]{{article}}"#);
-    println!(r#"\usepackage{{amsmath}}"#);
-    println!(r#"\begin{{document}}"#);
-    for (n, s) in collected {
-        println!("\\section{{ $N = {n}$ }}");
-        println!("{s}");
-    }
-    println!(r#"\end{{document}}"#);
+    // */
 }

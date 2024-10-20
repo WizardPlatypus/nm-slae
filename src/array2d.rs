@@ -2,6 +2,7 @@ use crate::traits::Mapped;
 use crate::Matrix;
 use either::{Either, Left, Right};
 
+#[derive(Debug, Clone)]
 pub struct Array2d<T> {
     rows: Either<usize, Vec<usize>>,
     columns: Either<usize, Vec<usize>>,
@@ -153,6 +154,27 @@ impl<T> Mapped for Array2d<T> {
     }
 }
 
+impl<T: PartialEq> PartialEq for Array2d<T> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.height() != other.height() {
+            return false;
+        }
+        if self.width() != other.width() {
+            return false;
+        }
+
+        for i in 0..self.height() {
+            for j in 0..self.width() {
+                if self.at(i, j) != other.at(i, j) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+}
+
 impl std::fmt::Display for Array2d<f64> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use crate::Iteratable;
@@ -164,5 +186,309 @@ impl std::fmt::Display for Array2d<f64> {
             writeln!(f, " |")?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Array2d;
+    use crate::{traits::Mapped, Iteratable, Matrix};
+
+    #[test]
+    fn gen_matches_try_from() {
+        let data: Vec<(usize, usize)> = vec![
+            (0, 0),
+            (0, 1),
+            (0, 2),
+            (1, 0),
+            (1, 1),
+            (1, 2),
+            (2, 0),
+            (2, 1),
+            (2, 2),
+        ];
+        let a = Array2d::try_from(3, 3, data).expect("Dimensions were incorrect");
+        let b = Array2d::gen(3, 3, |i, j| (i, j));
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn rows_access_ok() {
+        let m = Array2d::gen(3, 3, |i, j| (i, j));
+        for (row_id, row) in m.rows().enumerate() {
+            for (column_id, &(i, j)) in row.enumerate() {
+                assert_eq!(i, row_id);
+                assert_eq!(j, column_id);
+            }
+        }
+    }
+
+    #[test]
+    fn columns_access_ok() {
+        let m = Array2d::gen(3, 3, |i, j| (i, j));
+        for (column_id, column) in m.columns().enumerate() {
+            for (row_id, &(i, j)) in column.enumerate() {
+                assert_eq!(i, row_id);
+                assert_eq!(j, column_id);
+            }
+        }
+    }
+
+    #[test]
+    fn swap_rows_ok() {
+        let size = 5;
+
+        let mut m = Array2d::gen(size, size, |i, j| (i, j));
+        let mut temp = (0, 0);
+
+        m.swap_rows(0, 2);
+        let m21034 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (2, 0),
+                (2, 1),
+                (2, 2),
+                (2, 3),
+                (2, 4),
+                (1, 0),
+                (1, 1),
+                (1, 2),
+                (1, 3),
+                (1, 4),
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 4),
+                (3, 0),
+                (3, 1),
+                (3, 2),
+                (3, 3),
+                (3, 4),
+                (4, 0),
+                (4, 1),
+                (4, 2),
+                (4, 3),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m21034");
+        assert_eq!(m, m21034, "Row swap #0 (0, 2) failed");
+
+        m.sync_rows(&mut temp);
+        m.reset_rows(size);
+        assert_eq!(m, m21034, "Row sync #0 (0, 2) failed");
+
+        m.swap_rows(2, 3);
+        let m21304 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (2, 0),
+                (2, 1),
+                (2, 2),
+                (2, 3),
+                (2, 4),
+                (1, 0),
+                (1, 1),
+                (1, 2),
+                (1, 3),
+                (1, 4),
+                (3, 0),
+                (3, 1),
+                (3, 2),
+                (3, 3),
+                (3, 4),
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 4),
+                (4, 0),
+                (4, 1),
+                (4, 2),
+                (4, 3),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m21304");
+        assert_eq!(m, m21304, "Row swap #1 (2, 3) failed");
+
+        m.swap_rows(0, 2);
+        let m31204 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (3, 0),
+                (3, 1),
+                (3, 2),
+                (3, 3),
+                (3, 4),
+                (1, 0),
+                (1, 1),
+                (1, 2),
+                (1, 3),
+                (1, 4),
+                (2, 0),
+                (2, 1),
+                (2, 2),
+                (2, 3),
+                (2, 4),
+                (0, 0),
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (0, 4),
+                (4, 0),
+                (4, 1),
+                (4, 2),
+                (4, 3),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m31204");
+        assert_eq!(m, m31204, "Row swap #2 (0, 2) failed");
+
+        m.sync_rows(&mut temp);
+        m.reset_rows(size);
+        assert_eq!(m, m21034, "Row sync #2 (0, 2) failed");
+
+        m.swap_rows(0, 3);
+        let m01234 = Array2d::gen(size, size, |i, j| (i, j));
+        assert_eq!(m, m01234, "Row swap #3 (0, 3) failed");
+
+        m.sync_rows(&mut temp);
+        m.reset_rows(size);
+        assert_eq!(m, m21034, "Row sync #3 (0, 3) failed");
+    }
+
+    #[test]
+    fn swap_columns_ok() {
+        let size = 5;
+
+        let mut m = Array2d::gen(size, size, |i, j| (i, j));
+        let mut temp = (0, 0);
+
+        m.swap_columns(0, 2);
+        let m21034 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (0, 2),
+                (0, 1),
+                (0, 0),
+                (0, 3),
+                (0, 4),
+                (1, 2),
+                (1, 1),
+                (1, 0),
+                (1, 3),
+                (1, 4),
+                (2, 2),
+                (2, 1),
+                (2, 0),
+                (2, 3),
+                (2, 4),
+                (3, 2),
+                (3, 1),
+                (3, 0),
+                (3, 3),
+                (3, 4),
+                (4, 2),
+                (4, 1),
+                (4, 0),
+                (4, 3),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m21034");
+        assert_eq!(m, m21034, "Column swap #0 (0, 2) failed");
+
+        m.sync_columns(&mut temp);
+        m.reset_columns(size);
+        assert_eq!(m, m21034, "Column sync #0 (0, 2) failed");
+
+        m.swap_columns(2, 3);
+        let m21304 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (0, 2),
+                (0, 1),
+                (0, 3),
+                (0, 0),
+                (0, 4),
+                (1, 2),
+                (1, 1),
+                (1, 3),
+                (1, 0),
+                (1, 4),
+                (2, 2),
+                (2, 1),
+                (2, 3),
+                (2, 0),
+                (2, 4),
+                (3, 2),
+                (3, 1),
+                (3, 3),
+                (3, 0),
+                (3, 4),
+                (4, 2),
+                (4, 1),
+                (4, 3),
+                (4, 0),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m21304");
+        assert_eq!(m, m21304, "Column swap #1 (2, 3) failed");
+
+        m.swap_columns(0, 2);
+        let m31204 = Array2d::try_from(
+            size,
+            size,
+            vec![
+                (0, 3),
+                (0, 1),
+                (0, 2),
+                (0, 0),
+                (0, 4),
+                (1, 3),
+                (1, 1),
+                (1, 2),
+                (1, 0),
+                (1, 4),
+                (2, 3),
+                (2, 1),
+                (2, 2),
+                (2, 0),
+                (2, 4),
+                (3, 3),
+                (3, 1),
+                (3, 2),
+                (3, 0),
+                (3, 4),
+                (4, 3),
+                (4, 1),
+                (4, 2),
+                (4, 0),
+                (4, 4),
+            ],
+        )
+        .expect("Wrong dimensions for m31204");
+        assert_eq!(m, m31204, "Column swap #2 (0, 2) failed");
+
+        m.sync_columns(&mut temp);
+        m.reset_columns(size);
+        assert_eq!(m, m21034, "Column sync #2 (0, 2) failed");
+
+        m.swap_columns(0, 3);
+        let m01234 = Array2d::gen(size, size, |i, j| (i, j));
+        assert_eq!(m, m01234, "Column swap #3 (0, 3) failed");
+
+        m.sync_columns(&mut temp);
+        m.reset_columns(size);
+        assert_eq!(m, m21034, "Column sync #3 (0, 3) failed");
     }
 }
