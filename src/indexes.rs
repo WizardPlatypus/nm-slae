@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Row {
     height: usize,
     width: usize,
@@ -50,6 +51,7 @@ impl std::iter::DoubleEndedIterator for Row {
     }
 }
 
+#[derive(Clone)]
 pub struct Rows {
     height: usize,
     width: usize,
@@ -102,6 +104,7 @@ impl std::iter::DoubleEndedIterator for Rows {
     }
 }
 
+#[derive(Clone)]
 pub struct Column {
     height: usize,
     width: usize,
@@ -152,6 +155,7 @@ impl std::iter::DoubleEndedIterator for Column {
     }
 }
 
+#[derive(Clone)]
 pub struct Columns {
     height: usize,
     width: usize,
@@ -204,31 +208,31 @@ impl std::iter::DoubleEndedIterator for Columns {
     }
 }
 
-pub trait Iteratable {
-    fn height(&self) -> usize;
-    fn width(&self) -> usize;
+pub trait Indexable {
+    fn iheight(&self) -> usize;
+    fn iwidth(&self) -> usize;
 
-    fn row(&self, row: usize) -> Row {
-        Row::new(self.height(), self.width(), row)
+    fn irow(&self, row: usize) -> Row {
+        Row::new(self.iheight(), self.iwidth(), row)
     }
-    fn column(&self, column: usize) -> Column {
-        Column::new(self.height(), self.width(), column)
+    fn icolumn(&self, column: usize) -> Column {
+        Column::new(self.iheight(), self.iwidth(), column)
     }
 
-    fn rows(&self) -> Rows {
-        Rows::new(self.height(), self.width())
+    fn irows(&self) -> Rows {
+        Rows::new(self.iheight(), self.iwidth())
     }
-    fn columns(&self) -> Columns {
-        Columns::new(self.height(), self.width())
+    fn icolumns(&self) -> Columns {
+        Columns::new(self.iheight(), self.iwidth())
     }
 }
 
-impl<M: crate::Matrix<Item=T>, T> Iteratable for M {
-    fn height(&self) -> usize {
+impl<M: crate::Matrix<Item=T>, T> Indexable for M {
+    fn iheight(&self) -> usize {
         self.height()
     }
 
-    fn width(&self) -> usize {
+    fn iwidth(&self) -> usize {
         self.width()
     }
 }

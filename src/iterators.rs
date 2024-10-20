@@ -1,7 +1,6 @@
 use crate::Matrix;
 
-pub mod indexed;
-
+#[derive(Clone)]
 pub struct Row<'a, T> {
     origin: &'a T,
     row: usize,
@@ -53,6 +52,7 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Row<'a, M>
     }
 }
 
+#[derive(Clone)]
 pub struct Rows<'a, T> {
     origin: &'a T,
     left: usize,
@@ -104,6 +104,7 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Rows<'a, M> {
     }
 }
 
+#[derive(Clone)]
 pub struct Column<'a, T> {
     origin: &'a T,
     column: usize,
@@ -155,6 +156,7 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a,
     }
 }
 
+#[derive(Clone)]
 pub struct Columns<'a, T> {
     origin: &'a T,
     left: usize,
