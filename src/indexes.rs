@@ -60,9 +60,7 @@ pub struct Rows {
 }
 
 impl Rows {
-    pub fn new(
-        height: usize, width: usize
-    ) -> Rows {
+    pub fn new(height: usize, width: usize) -> Rows {
         Rows {
             height,
             width,
@@ -116,7 +114,9 @@ pub struct Column {
 impl Column {
     pub fn new(height: usize, width: usize, column: usize) -> Column {
         Column {
-            height, width, column,
+            height,
+            width,
+            column,
             left: 0,
             right: 0,
         }
@@ -164,12 +164,10 @@ pub struct Columns {
 }
 
 impl Columns {
-    pub fn new(
-        height: usize,
-        width: usize,
-    ) -> Columns {
+    pub fn new(height: usize, width: usize) -> Columns {
         Columns {
-            height, width,
+            height,
+            width,
             left: 0,
             right: 0,
         }
@@ -227,7 +225,7 @@ pub trait Indexable {
     }
 }
 
-impl<M: crate::Matrix<Item=T>, T> Indexable for M {
+impl<M: crate::Matrix<Item = T>, T> Indexable for M {
     fn iheight(&self) -> usize {
         self.height()
     }

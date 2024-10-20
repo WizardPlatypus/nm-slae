@@ -1,11 +1,11 @@
-use crate::Matrix;
 use crate::traits::Mapped;
+use crate::Matrix;
 use either::{Either, Left, Right};
 
 pub struct Array2d<T> {
     rows: Either<usize, Vec<usize>>,
     columns: Either<usize, Vec<usize>>,
-    data: Vec<T>
+    data: Vec<T>,
 }
 
 impl<T: Default + Clone> Array2d<T> {
@@ -13,7 +13,7 @@ impl<T: Default + Clone> Array2d<T> {
         Array2d {
             rows: Left(height),
             columns: Left(width),
-            data: vec![T::default(); height * width]
+            data: vec![T::default(); height * width],
         }
     }
 }
@@ -29,16 +29,16 @@ impl<T> Array2d<T> {
         Array2d {
             rows: Left(height),
             columns: Left(width),
-            data
+            data,
         }
     }
 
     pub fn try_from(height: usize, width: usize, data: Vec<T>) -> Result<Array2d<T>, Vec<T>> {
         if height * width == data.len() {
             Ok(Array2d {
-            rows: Left(height),
-            columns: Left(width),
-            data
+                rows: Left(height),
+                columns: Left(width),
+                data,
             })
         } else {
             Err(data)
@@ -97,10 +97,10 @@ impl<T> Matrix for Array2d<T> {
                 let mut rows: Vec<usize> = (0..*height).map(usize::from).collect();
                 rows.swap(a, b);
                 self.rows = Right(rows);
-            },
+            }
             Right(v) => {
                 v.swap(a, b);
-            },
+            }
         }
         Some(())
     }
@@ -113,10 +113,10 @@ impl<T> Matrix for Array2d<T> {
                 let mut columns: Vec<usize> = (0..*width).map(usize::from).collect();
                 columns.swap(a, b);
                 self.columns = Right(columns);
-            },
+            }
             Right(v) => {
                 v.swap(a, b);
-            },
+            }
         }
         Some(())
     }
@@ -140,20 +140,18 @@ impl<T> Mapped for Array2d<T> {
     }
 
     fn cell(&mut self, row: usize, column: usize) -> &mut Self::Item {
-        self.at_mut(row, column).expect("Invalid access request from Mapped trait")
+        self.at_mut(row, column)
+            .expect("Invalid access request from Mapped trait")
     }
-    
+
     fn reset_rows(&mut self, height: usize) {
         self.rows = Left(height);
     }
-    
+
     fn reset_columns(&mut self, width: usize) {
         self.columns = Left(width);
     }
-
-    
 }
-
 
 impl std::fmt::Display for Array2d<f64> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

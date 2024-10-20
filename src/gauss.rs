@@ -1,10 +1,10 @@
-use crate::{Matrix, Iteratable, Indexable};
+use crate::{Indexable, Iteratable, Matrix};
 
 fn total_cmp(a: &(usize, f64), b: &(usize, f64)) -> std::cmp::Ordering {
     f64::total_cmp(&a.1, &b.1)
 }
 
-pub fn calc_l<M: Matrix<Item=f64>>(m: &mut M) -> Option<()> {
+pub fn calc_l<M: Matrix<Item = f64>>(m: &mut M) -> Option<()> {
     let h: usize = m.height();
     let w: usize = m.width();
 
@@ -49,7 +49,7 @@ pub fn calc_l<M: Matrix<Item=f64>>(m: &mut M) -> Option<()> {
     Some(())
 }
 
-pub fn calc_u<M: Matrix<Item=f64>>(m: &mut M) -> Option<()> {
+pub fn calc_u<M: Matrix<Item = f64>>(m: &mut M) -> Option<()> {
     let h: usize = m.height();
     let w: usize = m.width();
 
@@ -90,7 +90,6 @@ pub fn calc_u<M: Matrix<Item=f64>>(m: &mut M) -> Option<()> {
             }
         }
         // */
-
 
         for row in (i + 1)..h {
             let row = h - row - 1;

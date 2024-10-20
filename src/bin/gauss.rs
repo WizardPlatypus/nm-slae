@@ -15,7 +15,6 @@ fn my_matrix(n: usize, i: usize, j: usize) -> i64 {
     }
 }
 
-
 fn main() {
     use std::str::FromStr;
     let n: usize = usize::from_str(&std::env::args().nth(1).expect("Missing argument"))

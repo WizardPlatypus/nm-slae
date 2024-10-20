@@ -24,7 +24,9 @@ pub trait Mapped {
         let mut cursor = 0;
         loop {
             std::mem::swap(self.cell(row, cursor), temp);
-            cursor = self.column(cursor).expect("Column out of bounds in default Mapped implementation");
+            cursor = self
+                .column(cursor)
+                .expect("Column out of bounds in default Mapped implementation");
             if cursor == 0 {
                 std::mem::swap(self.cell(row, cursor), temp);
                 break;
@@ -36,7 +38,9 @@ pub trait Mapped {
         let mut cursor = 0;
         loop {
             std::mem::swap(self.cell(cursor, column), temp);
-            cursor = self.row(cursor).expect("Column out of bounds in default Mapped implementation");
+            cursor = self
+                .row(cursor)
+                .expect("Column out of bounds in default Mapped implementation");
             if cursor == 0 {
                 std::mem::swap(self.cell(cursor, column), temp);
                 break;

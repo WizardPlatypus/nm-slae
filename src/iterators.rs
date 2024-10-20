@@ -19,7 +19,7 @@ impl<'a, T> Row<'a, T> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Row<'a, M> {
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::Iterator for Row<'a, M> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.origin.width() - self.right {
@@ -37,9 +37,9 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Row<'a, M> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Row<'a, M> {}
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::ExactSizeIterator for Row<'a, M> {}
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Row<'a, M> {
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::DoubleEndedIterator for Row<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let w = self.origin.width();
         if self.left < w - self.right {
@@ -60,9 +60,7 @@ pub struct Rows<'a, T> {
 }
 
 impl<'a, T> Rows<'a, T> {
-    pub fn new(
-        origin: &'a T,
-    ) -> Rows<'a, T> {
+    pub fn new(origin: &'a T) -> Rows<'a, T> {
         Rows {
             origin,
             left: 0,
@@ -71,7 +69,7 @@ impl<'a, T> Rows<'a, T> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Rows<'a, M> {
+impl<'a, M: Matrix<Item = T>, T> std::iter::Iterator for Rows<'a, M> {
     type Item = Row<'a, M>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.origin.height() - self.right {
@@ -89,9 +87,9 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Rows<'a, M> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Rows<'a, M> {}
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::ExactSizeIterator for Rows<'a, M> {}
 
-impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Rows<'a, M> {
+impl<'a, M: Matrix<Item = T>, T> std::iter::DoubleEndedIterator for Rows<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let h = self.origin.height();
         if self.left < h - self.right {
@@ -123,7 +121,7 @@ impl<'a, T> Column<'a, T> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Column<'a, M> {
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::Iterator for Column<'a, M> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.origin.height() - self.right {
@@ -141,9 +139,9 @@ impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::Iterator for Column<'a, M> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Column<'a, M> {}
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::ExactSizeIterator for Column<'a, M> {}
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a, M> {
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::DoubleEndedIterator for Column<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let h = self.origin.height();
         if self.left < h - self.right {
@@ -164,9 +162,7 @@ pub struct Columns<'a, T> {
 }
 
 impl<'a, T> Columns<'a, T> {
-    pub fn new(
-        origin: &'a T,
-    ) -> Columns<'a, T> {
+    pub fn new(origin: &'a T) -> Columns<'a, T> {
         Columns {
             origin,
             left: 0,
@@ -175,7 +171,7 @@ impl<'a, T> Columns<'a, T> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Columns<'a, M> {
+impl<'a, M: Matrix<Item = T>, T> std::iter::Iterator for Columns<'a, M> {
     type Item = Column<'a, M>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.left < self.origin.width() - self.right {
@@ -193,9 +189,9 @@ impl<'a, M: Matrix<Item=T>, T> std::iter::Iterator for Columns<'a, M> {
     }
 }
 
-impl<'a, M: Matrix<Item=T>, T: 'a> std::iter::ExactSizeIterator for Columns<'a, M> {}
+impl<'a, M: Matrix<Item = T>, T: 'a> std::iter::ExactSizeIterator for Columns<'a, M> {}
 
-impl<'a, M: Matrix<Item=T>, T> std::iter::DoubleEndedIterator for Columns<'a, M> {
+impl<'a, M: Matrix<Item = T>, T> std::iter::DoubleEndedIterator for Columns<'a, M> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let w = self.origin.width();
         if self.left < w - self.right {
@@ -226,7 +222,7 @@ pub trait Iteratable<M> {
     }
 }
 
-impl<M: Matrix<Item=T>, T> Iteratable<M> for M {
+impl<M: Matrix<Item = T>, T> Iteratable<M> for M {
     fn origin(&self) -> &M {
         self
     }

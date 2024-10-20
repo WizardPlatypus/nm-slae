@@ -1,10 +1,10 @@
 use crate::Matrix;
 
 pub struct Transposed<T> {
-    origin: T
+    origin: T,
 }
 
-impl<M: Matrix<Item=T>, T> Matrix for Transposed<M> {
+impl<M: Matrix<Item = T>, T> Matrix for Transposed<M> {
     type Item = T;
 
     fn at(&self, row: usize, column: usize) -> Option<&Self::Item> {

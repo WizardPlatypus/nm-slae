@@ -1,11 +1,11 @@
-use crate::Matrix;
 use crate::traits::Mapped;
+use crate::Matrix;
 use either::{Either, Left, Right};
 
 pub struct Meow<T> {
     rows: Either<usize, Vec<usize>>,
     columns: Either<usize, Vec<usize>>,
-    concat: Vec<T>
+    concat: Vec<T>,
 }
 
 impl<T> Meow<T> {
@@ -14,16 +14,14 @@ impl<T> Meow<T> {
     }
 }
 
-impl<M: Matrix<Item=T>, T> Meow<M> {
+impl<M: Matrix<Item = T>, T> Meow<M> {
     pub fn eat(&mut self, snack: M) -> Result<(), M> {
         if self.height() == snack.height() {
             let old = self.width();
             let new = old + snack.width();
             match self.columns.as_mut() {
                 Left(width) => *width = new,
-                Right(v) => {
-                    v.append(&mut (old..new).map(usize::from).collect())
-                },
+                Right(v) => v.append(&mut (old..new).map(usize::from).collect()),
             }
             self.concat.push(snack);
             Ok(())
@@ -43,8 +41,12 @@ impl<M: Matrix<Item=T>, T> Meow<M> {
         let poop = self.concat.pop().expect("Somehow concat is empty");
 
         match self.columns.as_mut() {
-            Left(width) => {*width -= poop.width();},
-            Right(v) => {v.drain((v.len() - poop.width())..);},
+            Left(width) => {
+                *width -= poop.width();
+            }
+            Right(v) => {
+                v.drain((v.len() - poop.width())..);
+            }
         };
 
         self.reset_columns(self.width());
@@ -69,8 +71,12 @@ impl<M: Matrix<Item=T>, T> Meow<M> {
         }
 
         match self.columns.as_mut() {
-            Left(width) => {*width -= poop.width();},
-            Right(v) => {v.drain(before..=(before + poop.width()));},
+            Left(width) => {
+                *width -= poop.width();
+            }
+            Right(v) => {
+                v.drain(before..=(before + poop.width()));
+            }
         };
 
         self.reset_columns(self.width());
@@ -96,48 +102,48 @@ impl<M: Matrix<Item=T>, T> Meow<M> {
     }
 }
 
-impl<M: Matrix<Item=T>, T> Mapped for Meow<M> {
+impl<M: Matrix<Item = T>, T> Mapped for Meow<M> {
     type Item = T;
-    
+
     fn row(&self, index: usize) -> Option<usize> {
         match self.rows.as_ref() {
             Left(_) => Some(index),
             Right(v) => v.get(index).map(Clone::clone),
         }
     }
-    
+
     fn column(&self, index: usize) -> Option<usize> {
         match self.columns.as_ref() {
             Left(_) => Some(index),
             Right(v) => v.get(index).map(Clone::clone),
         }
     }
-    
+
     fn cell(&mut self, row: usize, column: usize) -> &mut Self::Item {
-        self.at_mut(row, column).expect("Invalid access request from Mapped trait")
+        self.at_mut(row, column)
+            .expect("Invalid access request from Mapped trait")
     }
-    
+
     fn reset_rows(&mut self, height: usize) {
         self.rows = Left(height);
     }
-    
+
     fn reset_columns(&mut self, width: usize) {
         self.columns = Left(width);
     }
-
 }
 
-impl<M: Matrix<Item=T>, T> From<M> for Meow<M> {
+impl<M: Matrix<Item = T>, T> From<M> for Meow<M> {
     fn from(value: M) -> Self {
         Meow {
             rows: Left(value.height()),
             columns: Left(value.width()),
-            concat: vec![value]
+            concat: vec![value],
         }
     }
 }
 
-impl<M: Matrix<Item=T>, T> Matrix for Meow<M> {
+impl<M: Matrix<Item = T>, T> Matrix for Meow<M> {
     type Item = T;
 
     fn at(&self, row: usize, column: usize) -> Option<&Self::Item> {
@@ -194,10 +200,10 @@ impl<M: Matrix<Item=T>, T> Matrix for Meow<M> {
                 let mut rows: Vec<usize> = (0..*height).map(usize::from).collect();
                 rows.swap(a, b);
                 self.rows = Right(rows);
-            },
+            }
             Right(v) => {
                 v.swap(a, b);
-            },
+            }
         }
         Some(())
     }
@@ -210,10 +216,10 @@ impl<M: Matrix<Item=T>, T> Matrix for Meow<M> {
                 let mut columns: Vec<usize> = (0..*width).map(usize::from).collect();
                 columns.swap(a, b);
                 self.columns = Right(columns);
-            },
+            }
             Right(v) => {
                 v.swap(a, b);
-            },
+            }
         }
         Some(())
     }
