@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+either = "1.13.0"
 log = "0.4.22"
 num = "0.4.3"
 pretty_env_logger = "0.5.0"

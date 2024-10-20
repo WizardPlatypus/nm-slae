@@ -1,17 +1,18 @@
 use crate::Matrix;
 use crate::traits::Mapped;
+use either::{Either, Left, Right};
 
 pub struct Array2d<T> {
-    rows: Vec<usize>,
-    columns: Vec<usize>,
+    rows: Either<usize, Vec<usize>>,
+    columns: Either<usize, Vec<usize>>,
     data: Vec<T>
 }
 
 impl<T: Default + Clone> Array2d<T> {
     pub fn default(height: usize, width: usize) -> Array2d<T> {
         Array2d {
-            rows: (0..height).map(usize::from).collect(),
-            columns: (0..width).map(usize::from).collect(),
+            rows: Left(height),
+            columns: Left(width),
             data: vec![T::default(); height * width]
         }
     }
@@ -26,8 +27,8 @@ impl<T> Array2d<T> {
             }
         }
         Array2d {
-            rows: (0..height).map(usize::from).collect(),
-            columns: (0..width).map(usize::from).collect(),
+            rows: Left(height),
+            columns: Left(width),
             data
         }
     }
@@ -35,8 +36,8 @@ impl<T> Array2d<T> {
     pub fn try_from(height: usize, width: usize, data: Vec<T>) -> Result<Array2d<T>, Vec<T>> {
         if height * width == data.len() {
             Ok(Array2d {
-            rows: (0..height).map(usize::from).collect(),
-            columns: (0..width).map(usize::from).collect(),
+            rows: Left(height),
+            columns: Left(width),
             data
             })
         } else {
@@ -48,52 +49,75 @@ impl<T> Array2d<T> {
         for row in 0..self.height() {
             self.sync_row(row, temp);
         }
-        for i in 0..self.width() {
-            self.rows[i] = i;
-        }
     }
 
     pub fn sync_columns(&mut self, temp: &mut T) {
         for column in 0..self.width() {
             self.sync_column(column, temp);
         }
-        for i in 0..self.height() {
-            self.columns[i] = i;
-        }
     }
 }
 
-impl<T> crate::Matrix for Array2d<T> {
+impl<T> Matrix for Array2d<T> {
     type Item = T;
 
     fn at(&self, row: usize, column: usize) -> Option<&Self::Item> {
-        self.data.get(self.rows.get(row)? * self.width() + self.columns.get(column)?)
+        let width = self.width();
+        let row = self.row(row)?;
+        let column = self.column(column)?;
+        self.data.get(row * width + column)
     }
 
     fn at_mut(&mut self, row: usize, column: usize) -> Option<&mut Self::Item> {
         let width = self.width();
-        self.data.get_mut(self.rows.get(row)? * width + self.columns.get(column)?)
+        let row = self.row(row)?;
+        let column = self.column(column)?;
+        self.data.get_mut(row * width + column)
     }
 
     fn height(&self) -> usize {
-        self.rows.len()
+        match self.rows.as_ref() {
+            Left(height) => *height,
+            Right(v) => v.len(),
+        }
     }
 
     fn width(&self) -> usize {
-        self.columns.len()
+        match self.columns.as_ref() {
+            Left(width) => *width,
+            Right(v) => v.len(),
+        }
     }
 
     fn swap_rows(&mut self, a: usize, b: usize) -> Option<()> {
-        let a = *self.rows.get(a)?;
-        let b = *self.rows.get(b)?;
-        self.rows.swap(a, b);
+        let a = self.row(a)?;
+        let b = self.row(b)?;
+        match self.rows.as_mut() {
+            Left(height) => {
+                let mut rows: Vec<usize> = (0..*height).map(usize::from).collect();
+                rows.swap(a, b);
+                self.rows = Right(rows);
+            },
+            Right(v) => {
+                v.swap(a, b);
+            },
+        }
         Some(())
     }
 
     fn swap_columns(&mut self, a: usize, b: usize) -> Option<()> {
-        let a = *self.columns.get(a)?;
-        let b = *self.columns.get(b)?;
-        self.columns.swap(a, b);
+        let a = self.column(a)?;
+        let b = self.column(b)?;
+        match self.columns.as_mut() {
+            Left(width) => {
+                let mut columns: Vec<usize> = (0..*width).map(usize::from).collect();
+                columns.swap(a, b);
+                self.columns = Right(columns);
+            },
+            Right(v) => {
+                v.swap(a, b);
+            },
+        }
         Some(())
     }
 }
@@ -101,18 +125,33 @@ impl<T> crate::Matrix for Array2d<T> {
 impl<T> Mapped for Array2d<T> {
     type Item = T;
 
-    fn row(&self, index: usize) -> usize {
-        self.rows[index]
+    fn row(&self, index: usize) -> Option<usize> {
+        match self.rows.as_ref() {
+            Left(_) => Some(index),
+            Right(v) => v.get(index).map(Clone::clone),
+        }
     }
 
-    fn column(&self, index: usize) -> usize {
-        self.columns[index]
+    fn column(&self, index: usize) -> Option<usize> {
+        match self.columns.as_ref() {
+            Left(_) => Some(index),
+            Right(v) => v.get(index).map(Clone::clone),
+        }
     }
 
     fn cell(&mut self, row: usize, column: usize) -> &mut Self::Item {
-        use crate::Matrix;
         self.at_mut(row, column).expect("Invalid access request from Mapped trait")
     }
+    
+    fn reset_rows(&mut self, height: usize) {
+        self.rows = Left(height);
+    }
+    
+    fn reset_columns(&mut self, width: usize) {
+        self.columns = Left(width);
+    }
+
+    
 }
 
 
